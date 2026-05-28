@@ -307,9 +307,10 @@
                 '</div>';
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            var endpoint = "http://localhost:8000/api/chat";
-            if (currentMode === 'photo') endpoint = "http://localhost:8000/api/photo";
-            if (currentMode === 'video') endpoint = "http://localhost:8000/api/video";
+                        // ከዚህ በታች ያለው መስመር በአዲሱ የ Render ሊንክ ተቀይሯል
+            var endpoint = "https://ozoneai.onrender.com/chat";
+            if (currentMode === 'photo') endpoint = "https://ozoneai.onrender.com/photo";
+            if (currentMode === 'video') endpoint = "https://ozoneai.onrender.com/video";
 
             var xhr = new XMLHttpRequest();
             xhr.open("POST", endpoint, true);
