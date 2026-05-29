@@ -69,8 +69,8 @@
         </div>
     </div>
 
-    <div class="flex-1 flex flex-col relative bg-[#131314] h-full w-full overflow-hidden">
-        <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-gray-800/20">
+    <div class="flex-1 flex flex-col h-full relative bg-[#131314] w-full overflow-hidden">
+        <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-gray-800/20 flex-shrink-0">
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg cursor-pointer transition p-2 rounded-full hover:bg-gray-800/50">
                     <i class="fa-solid fa-bars"></i>
@@ -85,9 +85,9 @@
             </button>
         </div>
 
-        <div id="chat-box" class="flex-1 h-full overflow-y-auto px-4 py-4 space-y-6 flex flex-col max-w-3xl w-full mx-auto"></div>
+        <div id="chat-box" class="flex-1 h-full overflow-y-auto px-4 py-4 flex flex-col max-w-3xl w-full mx-auto justify-center"></div>
 
-        <div class="p-4 bg-[#131314]">
+        <div class="p-4 bg-[#131314] flex-shrink-0">
             <div class="max-w-3xl mx-auto flex items-center bg-[#1e1f20] rounded-full px-4 py-2 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg">
                 <input type="text" id="user-input" placeholder="Message OzoneAI..." class="flex-1 bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[15px] py-1.5 px-1" autocomplete="off">
                 <button id="send-btn" onclick="sendMessage()" class="text-gray-400 hover:text-[#00f2fe] w-9 h-9 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 ml-1">
@@ -112,8 +112,6 @@
             };
             loadChatHistory();
             showWelcomeMessage();
-            
-            // የኮምፒውተር ስክሪን ከሆነ ማውጫውን ሁልጊዜ አሳይ
             setupResponsiveSidebar();
         };
 
@@ -147,33 +145,34 @@
         }
 
         function showWelcomeMessage() {
-    var title = "OzoneAI";
-    var subtitle = "How can I help you today?";
-    var placeholder = "Message OzoneAI...";
+            var title = "OzoneAI";
+            var subtitle = "How can I help you today?";
+            var placeholder = "Message OzoneAI...";
 
-    if (currentMode === 'photo') {
-        title = "Ozone Photo AI";
-        subtitle = "Generate & edit stunning images.";
-        placeholder = "Describe the image you want to generate...";
-    } else if (currentMode === 'video') {
-        title = "Ozone Video Automation";
-        subtitle = "Create & structure video scripts.";
-        placeholder = "Enter video topic or concept...";
-    }
+            if (currentMode === 'photo') {
+                title = "Ozone Photo AI";
+                subtitle = "Generate & edit stunning images.";
+                placeholder = "Describe the image you want to generate...";
+            } else if (currentMode === 'video') {
+                title = "Ozone Video Automation";
+                subtitle = "Create & structure video scripts.";
+                placeholder = "Enter video topic or concept...";
+            }
 
-    document.getElementById("user-input").placeholder = placeholder;
-    
-    // የፊተኛውን ገጽ ይዘት በስልክም በኮምፒውተርም ፍጹም መሃል ላይ (Centered) የሚያደርግ ስታይል
-    document.getElementById("chat-box").innerHTML =
-         '<div id="welcome-message" class="flex-1 flex flex-col justify-center items-start px-4 h-full">' +
-            '<h1 class="text-4xl md:text-5xl font-bold text-[#00f2fe] tracking-tight mb-3 flex items-center gap-3">' +
-                '<span>⚡️</span>' +
-                '<span>' + title + '</span>' +
-            '</h1>' +
-            '<h2 class="text-xl md:text-2xl font-medium text-[#e3e3e3]/80 tracking-tight">' + subtitle + '</h2>' +
-        '</div>';
-}
-
+            document.getElementById("user-input").placeholder = placeholder;
+            
+            // እዚህ ጋር ጽሑፉን ፍጹም መሃል ላይ ለማምጣት አቀማመጡ ተስተካክሏል
+            var chatBox = document.getElementById("chat-box");
+            chatBox.classList.add("justify-center"); 
+            chatBox.innerHTML =
+                 '<div id="welcome-message" class="w-full flex flex-col justify-center items-start px-2 py-8">' +
+                    '<h1 class="text-4xl md:text-5xl font-bold text-[#00f2fe] tracking-tight mb-3 flex items-center gap-3">' +
+                        '<span>⚡️</span>' +
+                        '<span>' + title + '</span>' +
+                    '</h1>' +
+                    '<h2 class="text-xl md:text-2xl font-medium text-[#e3e3e3]/80 tracking-tight">' + subtitle + '</h2>' +
+                '</div>';
+        }
 
         function createNewChat() {
             currentChatId = null;
@@ -280,18 +279,19 @@
             if (activeSession) {
                 currentMode = activeSession.mode;
                 var chatBox = document.getElementById("chat-box");
+                chatBox.classList.remove("justify-center"); // ሜሴጅ ሲኖር መሃል መሆኑ ይጥፋ
                 chatBox.innerHTML = "";
                 
                 activeSession.messages.forEach(function(msg) {
                     if (msg.role === "user") {
                         chatBox.innerHTML += 
-                            '<div class="flex justify-end w-full">' +
+                            '<div class="flex justify-end w-full py-1">' +
                                 '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + msg.text + '</div>' +
                             '</div>';
                     } else {
                         var imgHtml = msg.image ? '<img src="' + msg.image + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-md" />' : '';
                         chatBox.innerHTML += 
-                            '<div class="flex justify-start w-full pl-1">' +
+                            '<div class="flex justify-start w-full pl-1 py-1">' +
                                 '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + 
                                     msg.text + imgHtml +
                                 '</div>' +
@@ -338,10 +338,13 @@
             if (message === "") return;
 
             var welcome = document.getElementById("welcome-message");
-            if (welcome) welcome.remove();
+            if (welcome) {
+                welcome.remove();
+                chatBox.classList.remove("justify-center"); // ወሬ ሲጀመር ወደ ላይ እንዲወጣ
+            }
             
             chatBox.innerHTML +=
-                  '<div class="flex justify-end w-full">' +
+                  '<div class="flex justify-end w-full py-1">' +
                     '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + message + '</div>' +
                 '</div>';
             
@@ -351,7 +354,7 @@
 
             var loadingId = "loading-" + Date.now();
             chatBox.innerHTML += 
-                '<div id="' + loadingId + '" class="flex justify-start w-full pl-1 animate-pulse">' +
+                '<div id="' + loadingId + '" class="flex justify-start w-full pl-1 animate-pulse py-2">' +
                     '<div class="text-gray-400 text-xl font-bold tracking-widest thinking-dots"></div>' +
                 '</div>';
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -374,7 +377,7 @@
                         var imgHtml = data.image ? '<img src="' + data.image + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-lg" />' : '';
                         
                         chatBox.innerHTML += 
-                            '<div class="flex justify-start w-full pl-1">' +
+                            '<div class="flex justify-start w-full pl-1 py-1">' +
                                 '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + 
                                     data.reply + imgHtml +
                                 '</div>' +
@@ -382,7 +385,7 @@
                         saveMessageToHistory("ai", data.reply, data.image);
                     } else {
                         chatBox.innerHTML += 
-                            '<div class="flex justify-start w-full pl-1">' +
+                            '<div class="flex justify-start w-full pl-1 py-1">' +
                                 '<div class="bg-red-950/20 text-red-400/90 text-xs rounded-xl px-4 py-2 border border-red-900/30">⚠️ Connection failed. Check Python server.</div>' +
                             '</div>';
                     }
@@ -394,3 +397,4 @@
     </script>
 </body>
 </html>
+             
