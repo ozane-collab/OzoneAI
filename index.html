@@ -7,6 +7,41 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Tailwind ባይሰራ እንኳ ዲዛይኑን በስልክ ላይ በግድ መሃል የሚያደርግ ጠንካራ CSS */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100% !important;
+            width: 100% !important;
+            background-color: #131314;
+            color: #e3e3e3;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+        
+        #chat-box {
+            display: flex !important;
+            flex-direction: column !important;
+            height: 100% !important;
+            min-height: 0 !important;
+            flex-grow: 1 !important;
+            overflow-y: auto !important;
+        }
+
+        /* ጽሑፉን በስልክ ላይ ፍጹም መሃል የሚያደርግ ማስተካከያ */
+        #welcome-message {
+            margin: auto !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+            width: 100% !important;
+            height: auto !important;
+            padding: 20px !important;
+            box-sizing: border-box !important;
+        }
+
         .sidebar-hidden { transform: translateX(-100%); opacity: 0; pointer-events: none; }
         .sidebar-visible { transform: translateX(0); opacity: 1; pointer-events: auto; }
         
@@ -22,16 +57,14 @@
             100% { content: ''; }
         }
 
-        .history-item .delete-single-btn { opacity: 0; transition: opacity 0.2s ease; }
-        .history-item:hover .delete-single-btn { opacity: 1; }
-        
         @media (max-width: 768px) {
             .sidebar-visible { width: 280px !important; }
-            .history-item .delete-single-btn { opacity: 1; }
+            #welcome-message h1 { font-size: 2rem !important; }
+            #welcome-message h2 { font-size: 1.2rem !important; }
         }
     </style>
 </head>
-<body class="bg-[#131314] text-[#e3e3e3] font-sans h-screen flex overflow-hidden select-none relative">
+<body class="bg-[#131314] text-[#e3e3e3] h-screen flex overflow-hidden select-none relative">
 
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
 
@@ -60,7 +93,7 @@
             <div class="border-t border-gray-800/60 my-2 pt-2 flex flex-col flex-1">
                 <div class="flex justify-between items-center px-3 mb-2">
                     <span class="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Recent Chats</span>
-                    <button onclick="clearAllHistory()" class="text-gray-600 hover:text-red-400 text-xs transition cursor-pointer" title="Clear All History">
+                    <button onclick="clearAllHistory()" class="text-gray-600 hover:text-red-400 text-xs transition cursor-pointer">
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
                 </div>
@@ -70,7 +103,7 @@
     </div>
 
     <div class="flex-1 flex flex-col h-full relative bg-[#131314] w-full overflow-hidden">
-        <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-gray-800/20 flex-shrink-0">
+        <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0">
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg cursor-pointer transition p-2 rounded-full hover:bg-gray-800/50">
                     <i class="fa-solid fa-bars"></i>
@@ -85,7 +118,7 @@
             </button>
         </div>
 
-        <div id="chat-box" class="flex-1 h-full overflow-y-auto px-4 py-4 flex flex-col max-w-3xl w-full mx-auto justify-center"></div>
+        <div id="chat-box" class="flex-1 px-4 py-4 max-w-3xl w-full mx-auto"></div>
 
         <div class="p-4 bg-[#131314] flex-shrink-0">
             <div class="max-w-3xl mx-auto flex items-center bg-[#1e1f20] rounded-full px-4 py-2 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg">
@@ -161,16 +194,13 @@
 
             document.getElementById("user-input").placeholder = placeholder;
             
-            // እዚህ ጋር ጽሑፉን ፍጹም መሃል ላይ ለማምጣት አቀማመጡ ተስተካክሏል
             var chatBox = document.getElementById("chat-box");
-            chatBox.classList.add("justify-center"); 
             chatBox.innerHTML =
-                 '<div id="welcome-message" class="w-full flex flex-col justify-center items-start px-2 py-8">' +
-                    '<h1 class="text-4xl md:text-5xl font-bold text-[#00f2fe] tracking-tight mb-3 flex items-center gap-3">' +
-                        '<span>⚡️</span>' +
-                        '<span>' + title + '</span>' +
+                 '<div id="welcome-message">' +
+                    '<h1 style="color: #00f2fe; font-weight: bold; margin-bottom: 10px; font-size: 2.5rem; display: flex; align-items: center; gap: 10px;">' +
+                        '<span>⚡️</span><span>' + title + '</span>' +
                     '</h1>' +
-                    '<h2 class="text-xl md:text-2xl font-medium text-[#e3e3e3]/80 tracking-tight">' + subtitle + '</h2>' +
+                    '<h2 style="color: rgba(227, 227, 227, 0.8); font-weight: 500; font-size: 1.5rem; margin: 0;">' + subtitle + '</h2>' +
                 '</div>';
         }
 
@@ -256,7 +286,7 @@
                                 '<i class="fa-regular fa-message text-xs text-gray-500"></i>' +
                                 '<span class="truncate">' + displayTitle + '</span>' +
                             '</div>' +
-                            '<button onclick="deleteSingleHistory(\'' + session.id + '\', event)" class="delete-single-btn text-gray-500 hover:text-red-400 p-1 rounded transition ml-1" title="Delete chat">' +
+                            '<button onclick="deleteSingleHistory(\'' + session.id + '\', event)" class="text-gray-500 hover:text-red-400 p-1 rounded transition ml-1" title="Delete chat">' +
                                 '<i class="fa-solid fa-xmark text-xs"></i>' +
                             '</button>';
                         
@@ -279,19 +309,18 @@
             if (activeSession) {
                 currentMode = activeSession.mode;
                 var chatBox = document.getElementById("chat-box");
-                chatBox.classList.remove("justify-center"); // ሜሴጅ ሲኖር መሃል መሆኑ ይጥፋ
                 chatBox.innerHTML = "";
                 
                 activeSession.messages.forEach(function(msg) {
                     if (msg.role === "user") {
                         chatBox.innerHTML += 
-                            '<div class="flex justify-end w-full py-1">' +
+                            '<div style="display: flex; justify-content: flex-end; w-full; padding: 4px 0;">' +
                                 '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + msg.text + '</div>' +
                             '</div>';
                     } else {
                         var imgHtml = msg.image ? '<img src="' + msg.image + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-md" />' : '';
                         chatBox.innerHTML += 
-                            '<div class="flex justify-start w-full pl-1 py-1">' +
+                            '<div style="display: flex; justify-content: flex-start; w-full; padding: 4px 0; padding-left: 4px;">' +
                                 '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + 
                                     msg.text + imgHtml +
                                 '</div>' +
@@ -338,13 +367,10 @@
             if (message === "") return;
 
             var welcome = document.getElementById("welcome-message");
-            if (welcome) {
-                welcome.remove();
-                chatBox.classList.remove("justify-center"); // ወሬ ሲጀመር ወደ ላይ እንዲወጣ
-            }
+            if (welcome) welcome.remove();
             
             chatBox.innerHTML +=
-                  '<div class="flex justify-end w-full py-1">' +
+                  '<div style="display: flex; justify-content: flex-end; w-full; padding: 4px 0;">' +
                     '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + message + '</div>' +
                 '</div>';
             
@@ -377,7 +403,7 @@
                         var imgHtml = data.image ? '<img src="' + data.image + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-lg" />' : '';
                         
                         chatBox.innerHTML += 
-                            '<div class="flex justify-start w-full pl-1 py-1">' +
+                            '<div style="display: flex; justify-content: flex-start; w-full; padding: 4px 0; padding-left: 4px;">' +
                                 '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + 
                                     data.reply + imgHtml +
                                 '</div>' +
@@ -397,4 +423,3 @@
     </script>
 </body>
 </html>
-             
