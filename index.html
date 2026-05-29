@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ለስልክ የተስተካከለ ማውጫ */
         .sidebar-hidden { transform: translateX(-100%); opacity: 0; pointer-events: none; }
         .sidebar-visible { transform: translateX(0); opacity: 1; pointer-events: auto; }
         
@@ -26,7 +25,6 @@
         .history-item .delete-single-btn { opacity: 0; transition: opacity 0.2s ease; }
         .history-item:hover .delete-single-btn { opacity: 1; }
         
-        /* በስልክ ስክሪን ሲነካ ከለር እንዲቀይር */
         @media (max-width: 768px) {
             .sidebar-visible { width: 280px !important; }
             .history-item .delete-single-btn { opacity: 1; }
@@ -37,7 +35,7 @@
 
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
 
-    <div id="sidebar" class="sidebar-hidden fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
+    <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
         <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
             <div class="flex items-center gap-2">
                 <span class="text-base">⚡️</span>
@@ -68,12 +66,6 @@
                 </div>
                 <div id="chat-history-list" class="flex flex-col gap-1 overflow-y-auto max-h-[220px]"></div>
             </div>
-            
-            <div class="mt-auto border-t border-gray-800/40 pt-4">
-                <button onclick="selectMenu('ultimate')" id="menu-ultimate" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[13px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Ultimate AI Assistant
-                </button>
-            </div>
         </div>
     </div>
 
@@ -85,7 +77,7 @@
                 </button>
                 <div class="text-[#00f2fe] text-sm tracking-wide flex items-center gap-1.5 font-semibold">
                     <span>⚡️</span>
-                    <span id="top-branding-text">ozoneaipro</span>
+                    <span id="top-branding-text">ozoneai_chat</span>
                 </div>
             </div>
             <button onclick="createNewChat()" class="text-xs bg-[#1e1f20] hover:bg-[#282a2c] text-teal-400 px-3 py-1.5 rounded-full border border-gray-800 font-medium transition cursor-pointer flex items-center gap-1.5">
@@ -121,22 +113,36 @@
             loadChatHistory();
             showWelcomeMessage();
             
-            // በኮምፒውተር ላይ ሲከፈት ማውጫው ዝግጁ እንዲሆን
-            if(window.innerWidth > 768) {
-                var sidebar = document.getElementById("sidebar");
-                sidebar.className = sidebar.className.replace("sidebar-hidden", "sidebar-visible");
-            }
+            // የኮምፒውተር ስክሪን ከሆነ ማውጫውን ሁልጊዜ አሳይ
+            setupResponsiveSidebar();
         };
+
+        window.onresize = function() {
+            setupResponsiveSidebar();
+        };
+
+        function setupResponsiveSidebar() {
+            var sidebar = document.getElementById("sidebar");
+            if(window.innerWidth > 768) {
+                sidebar.classList.remove("sidebar-hidden");
+                sidebar.classList.add("sidebar-visible");
+            } else {
+                sidebar.classList.remove("sidebar-visible");
+                sidebar.classList.add("sidebar-hidden");
+            }
+        }
 
         function toggleSidebar() {
             var sidebar = document.getElementById("sidebar");
             var overlay = document.getElementById("sidebar-overlay");
-            if (sidebar.className.indexOf("sidebar-hidden") !== -1) {
-                sidebar.className = sidebar.className.replace("sidebar-hidden", "sidebar-visible");
-                overlay.classList.remove("hidden");
+            if (sidebar.classList.contains("sidebar-hidden")) {
+                sidebar.classList.remove("sidebar-hidden");
+                sidebar.classList.add("sidebar-visible");
+                if (window.innerWidth <= 768) overlay.classList.remove("hidden");
             } else {
-                sidebar.className = sidebar.className.replace("sidebar-visible", "sidebar-hidden");
-                overlay.classList.add("hidden");
+                sidebar.classList.remove("sidebar-visible");
+                sidebar.classList.add("sidebar-hidden");
+                if (window.innerWidth <= 768) overlay.classList.add("hidden");
             }
         }
 
@@ -173,14 +179,15 @@
             if(window.innerWidth <= 768) {
                 var sidebar = document.getElementById("sidebar");
                 var overlay = document.getElementById("sidebar-overlay");
-                sidebar.className = sidebar.className.replace("sidebar-visible", "sidebar-hidden");
+                sidebar.classList.remove("sidebar-visible");
+                sidebar.classList.add("sidebar-hidden");
                 overlay.classList.add("hidden");
             }
         }
 
         function selectMenu(menuType) {
             currentMode = menuType;
-            var menus = ['chat', 'photo', 'video', 'ultimate'];
+            var menus = ['chat', 'photo', 'video'];
             menus.forEach(function(m) {
                 var el = document.getElementById('menu-' + m);
                 if (el) {
@@ -294,7 +301,8 @@
                 if(window.innerWidth <= 768) {
                     var sidebar = document.getElementById("sidebar");
                     var overlay = document.getElementById("sidebar-overlay");
-                    sidebar.className = sidebar.className.replace("sidebar-visible", "sidebar-hidden");
+                    sidebar.classList.remove("sidebar-visible");
+                    sidebar.classList.add("sidebar-hidden");
                     overlay.classList.add("hidden");
                 }
             }
