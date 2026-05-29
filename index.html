@@ -147,30 +147,33 @@
         }
 
         function showWelcomeMessage() {
-            var title = "OzoneAI";
-            var subtitle = "How can I help you today?";
-            var placeholder = "Message OzoneAI...";
+    var title = "OzoneAI";
+    var subtitle = "How can I help you today?";
+    var placeholder = "Message OzoneAI...";
 
-            if (currentMode === 'photo') {
-                title = "Ozone Photo AI";
-                subtitle = "Generate & edit stunning images.";
-                placeholder = "Describe the image you want to generate...";
-            } else if (currentMode === 'video') {
-                title = "Ozone Video Automation";
-                subtitle = "Create & structure video scripts.";
-                placeholder = "Enter video topic or concept...";
-            }
+    if (currentMode === 'photo') {
+        title = "Ozone Photo AI";
+        subtitle = "Generate & edit stunning images.";
+        placeholder = "Describe the image you want to generate...";
+    } else if (currentMode === 'video') {
+        title = "Ozone Video Automation";
+        subtitle = "Create & structure video scripts.";
+        placeholder = "Enter video topic or concept...";
+    }
 
-            document.getElementById("user-input").placeholder = placeholder;
-            document.getElementById("chat-box").innerHTML =
-                 '<div id="welcome-message" class="my-auto text-left pl-2 pt-12 md:pt-0">' +
-                    '<h1 class="text-3xl md:text-4xl font-bold text-[#00f2fe] tracking-tight mb-2 flex items-center gap-2">' +
-                        '<span>⚡️</span>' +
-                        '<span>' + title + '</span>' +
-                    '</h1>' +
-                    '<h2 class="text-xl md:text-2xl font-medium text-[#e3e3e3]/80 tracking-tight">' + subtitle + '</h2>' +
-                '</div>';
-        }
+    document.getElementById("user-input").placeholder = placeholder;
+    
+    // የፊተኛውን ገጽ ይዘት በስልክም በኮምፒውተርም ፍጹም መሃል ላይ (Centered) የሚያደርግ ስታይል
+    document.getElementById("chat-box").innerHTML =
+         '<div id="welcome-message" class="flex-1 flex flex-col justify-center items-start px-4 h-full">' +
+            '<h1 class="text-4xl md:text-5xl font-bold text-[#00f2fe] tracking-tight mb-3 flex items-center gap-3">' +
+                '<span>⚡️</span>' +
+                '<span>' + title + '</span>' +
+            '</h1>' +
+            '<h2 class="text-xl md:text-2xl font-medium text-[#e3e3e3]/80 tracking-tight">' + subtitle + '</h2>' +
+        '</div>';
+}
+
 
         function createNewChat() {
             currentChatId = null;
