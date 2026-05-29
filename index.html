@@ -2,33 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>OzoneAI Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Tailwind ባይሰራ እንኳ ዲዛይኑን በስልክ ላይ በግድ መሃል የሚያደርግ ጠንካራ CSS */
+        /* በስልክ ላይ ኪቦርድ ሲወጣ መላው ገጽ ተጨምቆ መጻፊያውን ወደ ላይ እንዲገፋው የሚያደርግ ወሳኝ ስታይል */
         html, body {
             margin: 0;
             padding: 0;
-            height: 100% !important;
-            width: 100% !important;
+            height: 100%;
+            width: 100%;
             background-color: #131314;
             color: #e3e3e3;
             font-family: sans-serif;
             overflow: hidden;
+            display: flex;
         }
         
+        /* ዋናው የውይይት ክፍል ቁመት በስክሪኑ ልክ ተለዋዋጭ እንዲሆን */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            flex-1;
+            min-height: 0;
+        }
+
         #chat-box {
             display: flex !important;
             flex-direction: column !important;
-            height: 100% !important;
-            min-height: 0 !important;
-            flex-grow: 1 !important;
+            flex: 1 !important;
             overflow-y: auto !important;
+            min-height: 0 !important;
         }
 
-        /* ጽሑፉን በስልክ ላይ ፍጹም መሃል የሚያደርግ ማስተካከያ */
         #welcome-message {
             margin: auto !important;
             display: flex !important;
@@ -37,7 +46,6 @@
             align-items: center !important;
             text-align: center !important;
             width: 100% !important;
-            height: auto !important;
             padding: 20px !important;
             box-sizing: border-box !important;
         }
@@ -59,12 +67,12 @@
 
         @media (max-width: 768px) {
             .sidebar-visible { width: 280px !important; }
-            #welcome-message h1 { font-size: 2rem !important; }
-            #welcome-message h2 { font-size: 1.2rem !important; }
+            #welcome-message h1 { font-size: 2.2rem !important; }
+            #welcome-message h2 { font-size: 1.1rem !important; }
         }
     </style>
 </head>
-<body class="bg-[#131314] text-[#e3e3e3] h-screen flex overflow-hidden select-none relative">
+<body class="bg-[#131314] text-[#e3e3e3] select-none relative">
 
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
 
@@ -102,7 +110,7 @@
         </div>
     </div>
 
-    <div class="flex-1 flex flex-col h-full relative bg-[#131314] w-full overflow-hidden">
+    <div class="main-container bg-[#131314] overflow-hidden relative">
         <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0">
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg cursor-pointer transition p-2 rounded-full hover:bg-gray-800/50">
@@ -118,9 +126,9 @@
             </button>
         </div>
 
-        <div id="chat-box" class="flex-1 px-4 py-4 max-w-3xl w-full mx-auto"></div>
+        <div id="chat-box" class="px-4 py-4 max-w-3xl w-full mx-auto"></div>
 
-        <div class="p-4 bg-[#131314] flex-shrink-0">
+        <div class="p-4 bg-[#131314] flex-shrink-0 pb-safe">
             <div class="max-w-3xl mx-auto flex items-center bg-[#1e1f20] rounded-full px-4 py-2 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg">
                 <input type="text" id="user-input" placeholder="Message OzoneAI..." class="flex-1 bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[15px] py-1.5 px-1" autocomplete="off">
                 <button id="send-btn" onclick="sendMessage()" class="text-gray-400 hover:text-[#00f2fe] w-9 h-9 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 ml-1">
@@ -143,6 +151,18 @@
                     sendMessage();
                 }
             };
+
+            // ስልክ ላይ ኪቦርድ ሲከፈት ስክሪኑን አሳጥሮ ሳጥኑን ወደ ላይ እንዲገፋው ለVisualViewport ክትትል ማድረግ
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', function() {
+                    document.body.style.height = window.visualViewport.height + 'px';
+                    setTimeout(function() {
+                        var chatBox = document.getElementById("chat-box");
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    }, 100);
+                });
+            }
+
             loadChatHistory();
             showWelcomeMessage();
             setupResponsiveSidebar();
@@ -180,7 +200,7 @@
         function showWelcomeMessage() {
             var title = "OzoneAI";
             var subtitle = "How can I help you today?";
-            var placeholder = "Message OzoneAI...";
+            var placeholder = "Message OzoneAI..."
 
             if (currentMode === 'photo') {
                 title = "Ozone Photo AI";
@@ -197,10 +217,10 @@
             var chatBox = document.getElementById("chat-box");
             chatBox.innerHTML =
                  '<div id="welcome-message">' +
-                    '<h1 style="color: #00f2fe; font-weight: bold; margin-bottom: 10px; font-size: 2.5rem; display: flex; align-items: center; gap: 10px;">' +
+                    '<h1 style="color: #00f2fe; font-weight: bold; margin-bottom: 10px; font-size: 2.3rem; display: flex; align-items: center; justify-content: center; gap: 10px;">' +
                         '<span>⚡️</span><span>' + title + '</span>' +
                     '</h1>' +
-                    '<h2 style="color: rgba(227, 227, 227, 0.8); font-weight: 500; font-size: 1.5rem; margin: 0;">' + subtitle + '</h2>' +
+                    '<h2 style="color: rgba(227, 227, 227, 0.8); font-weight: 500; font-size: 1.3rem; margin: 0;">' + subtitle + '</h2>' +
                 '</div>';
         }
 
@@ -286,7 +306,7 @@
                                 '<i class="fa-regular fa-message text-xs text-gray-500"></i>' +
                                 '<span class="truncate">' + displayTitle + '</span>' +
                             '</div>' +
-                            '<button onclick="deleteSingleHistory(\'' + session.id + '\', event)" class="text-gray-500 hover:text-red-400 p-1 rounded transition ml-1" title="Delete chat">' +
+                            '<button onclick="deleteSingleHistory(\'' + session.id + '\', event)" class="delete-single-btn text-gray-500 hover:text-red-400 p-1 rounded transition ml-1">' +
                                 '<i class="fa-solid fa-xmark text-xs"></i>' +
                             '</button>';
                         
@@ -314,13 +334,13 @@
                 activeSession.messages.forEach(function(msg) {
                     if (msg.role === "user") {
                         chatBox.innerHTML += 
-                            '<div style="display: flex; justify-content: flex-end; w-full; padding: 4px 0;">' +
+                            '<div style="display: flex; justify-content: flex-end; width: 100%; padding: 4px 0;">' +
                                 '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + msg.text + '</div>' +
                             '</div>';
                     } else {
                         var imgHtml = msg.image ? '<img src="' + msg.image + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-md" />' : '';
                         chatBox.innerHTML += 
-                            '<div style="display: flex; justify-content: flex-start; w-full; padding: 4px 0; padding-left: 4px;">' +
+                            '<div style="display: flex; justify-content: flex-start; width: 100%; padding: 4px 0; padding-left: 4px;">' +
                                 '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + 
                                     msg.text + imgHtml +
                                 '</div>' +
@@ -370,7 +390,7 @@
             if (welcome) welcome.remove();
             
             chatBox.innerHTML +=
-                  '<div style="display: flex; justify-content: flex-end; w-full; padding: 4px 0;">' +
+                  '<div style="display: flex; justify-content: flex-end; width: 100%; padding: 4px 0;">' +
                     '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + message + '</div>' +
                 '</div>';
             
@@ -403,7 +423,7 @@
                         var imgHtml = data.image ? '<img src="' + data.image + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-lg" />' : '';
                         
                         chatBox.innerHTML += 
-                            '<div style="display: flex; justify-content: flex-start; w-full; padding: 4px 0; padding-left: 4px;">' +
+                            '<div style="display: flex; justify-content: flex-start; width: 100%; padding: 4px 0; padding-left: 4px;">' +
                                 '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + 
                                     data.reply + imgHtml +
                                 '</div>' +
