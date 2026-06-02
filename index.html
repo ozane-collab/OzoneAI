@@ -97,14 +97,13 @@
                 <i class="fa-solid fa-clapperboard text-red-400"></i> Video Automation
             </button>
 
-            <!-- 🔒 Hidden Secret Menu (Only activated via secret taps) -->
+            <!-- 🔒 Hidden Secret Menu -->
             <button onclick="promptForSecretMode()" id="menu-unrestricted" class="hidden w-full text-red-400 bg-red-950/20 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-red-900/40">
                 <i class="fa-solid fa-unlock-keyhole"></i> Admin Panel Active
             </button>
             
             <div class="border-t border-gray-800/60 my-2 pt-2 flex flex-col flex-1">
                 <div class="flex justify-between items-center px-3 mb-2">
-                    <!-- Secret trigger: Tapping this text 3 times unlocks the password prompt -->
                     <span onclick="secretTapTrigger()" class="text-[11px] text-gray-500 font-medium uppercase tracking-wider cursor-pointer select-none">Recent Chats</span>
                     <button onclick="clearAllHistory()" class="text-gray-600 hover:text-red-400 text-xs transition cursor-pointer">
                         <i class="fa-regular fa-trash-can"></i>
@@ -161,6 +160,8 @@
     </div>
 
     <script>
+        var RENDER_BASE_URL = "https://ozoneai.onrender.com"; 
+
         var currentChatId = null;
         var currentMode = 'chat'; 
         var inputAuthToken = ""; 
@@ -511,10 +512,9 @@
                 '</div>';
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            var endpoint = "https://ozoneai.onrender.com/chat";
-            if (currentMode === 'photo') endpoint = "https://ozoneai.onrender.com/photo";
-            if (currentMode === 'video') endpoint = "https://ozoneai.onrender.com/video";
-            if (currentMode === 'unrestricted') endpoint = "https://ozoneai.onrender.com/chat"; 
+            var endpoint = RENDER_BASE_URL + "/chat";
+            if (currentMode === 'photo') endpoint = RENDER_BASE_URL + "/photo";
+            if (currentMode === 'video') endpoint = RENDER_BASE_URL + "/video";
             
             var xhr = new XMLHttpRequest();
             xhr.open("POST", endpoint, true);
@@ -539,7 +539,7 @@
                     } else {
                         chatBox.innerHTML += 
                             '<div class="flex justify-start w-full pl-1 py-1">' +
-                                '<div class="bg-red-950/20 text-red-400/90 text-xs rounded-xl px-4 py-2 border border-red-900/30">⚠️ Connection failed. Check Python server.</div>' +
+                                '<div class="bg-red-950/20 text-red-400/90 text-xs rounded-xl px-4 py-2 border border-red-900/30">⚠️ Connection failed.</div>' +
                             '</div>';
                     }
                     chatBox.scrollTop = chatBox.scrollHeight;
