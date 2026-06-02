@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* በስልክ ላይ ኪቦርድ ሲወጣ መላው ገጽ ተጨምቆ መጻፊያውን ወደ ላይ እንዲገፋው የሚያደርግ ወሳኝ ስታይል */
         html, body {
             margin: 0;
             padding: 0;
@@ -20,13 +19,12 @@
             display: flex;
         }
         
-        /* ዋናው የውይይት ክፍል ቁመት በስክሪኑ ልክ ተለዋዋጭ እንዲሆን */
         .main-container {
             display: flex;
             flex-direction: column;
             height: 100%;
             width: 100%;
-            flex-1;
+            flex: 1;
             min-height: 0;
         }
 
@@ -142,6 +140,7 @@
     <script>
         var currentChatId = null;
         var currentMode = 'chat';
+        var MY_SECRET_PASSWORD = "E12N21OSK"; // የሰርቨሩ ሚስጥር ቃል
 
         window.onload = function() {
             var inputElement = document.getElementById("user-input");
@@ -152,7 +151,6 @@
                 }
             };
 
-            // ስልክ ላይ ኪቦርድ ሲከፈት ስክሪኑን አሳጥሮ ሳጥኑን ወደ ላይ እንዲገፋው ለVisualViewport ክትትል ማድረግ
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', function() {
                     document.body.style.height = window.visualViewport.height + 'px';
@@ -438,7 +436,12 @@
                     chatBox.scrollTop = chatBox.scrollHeight;
                 }
             };
-            xhr.send(JSON.stringify({ message: message }));
+            
+            // 🔒 የይለፍ ቃሉን (password) ከጥያቄው ጋር አብሮ ወደ Python ሰርቨር መላክ
+            xhr.send(JSON.stringify({ 
+                message: message,
+                password: MY_SECRET_PASSWORD 
+            }));
         }
     </script>
 </body>
