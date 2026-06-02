@@ -128,7 +128,7 @@
             </button>
         </div>
 
-        <div id="chat-box" class="px-4 py-4 max-w-3xl w-full mx-auto"></div>
+        <div id="chat-box" class="px-4 py-4 max-w-3xl w-full mx-auto flex-1 overflow-y-auto"></div>
 
         <div class="p-4 bg-[#131314] flex-shrink-0 pb-safe">
             <div class="max-w-3xl mx-auto flex items-center bg-[#1e1f20] rounded-full px-4 py-2 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg">
@@ -158,24 +158,26 @@
 
     <script>
         var currentChatId = null;
-        var currentMode = 'chat'; // 'chat', 'photo', 'video', 'unrestricted'
+        var currentMode = 'chat'; 
         var inputAuthToken = ""; 
 
         window.onload = function() {
             var inputElement = document.getElementById("user-input");
-            inputElement.onkeydown = function(event) {
-                if (event.keyCode === 13 || event.key === "Enter") {
-                    event.preventDefault();
-                    sendMessage();
-                }
-            };
+            if (inputElement) {
+                inputElement.onkeydown = function(event) {
+                    if (event.keyCode === 13 || event.key === "Enter") {
+                        event.preventDefault();
+                        sendMessage();
+                    }
+                };
+            }
 
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', function() {
                     document.body.style.height = window.visualViewport.height + 'px';
                     setTimeout(function() {
                         var chatBox = document.getElementById("chat-box");
-                        chatBox.scrollTop = chatBox.scrollHeight;
+                        if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
                     }, 100);
                 });
             }
@@ -191,6 +193,7 @@
 
         function setupResponsiveSidebar() {
             var sidebar = document.getElementById("sidebar");
+            if (!sidebar) return;
             if(window.innerWidth > 768) {
                 sidebar.classList.remove("sidebar-hidden");
                 sidebar.classList.add("sidebar-visible");
@@ -203,6 +206,7 @@
         function toggleSidebar() {
             var sidebar = document.getElementById("sidebar");
             var overlay = document.getElementById("sidebar-overlay");
+            if (!sidebar || !overlay) return;
             if (sidebar.classList.contains("sidebar-hidden")) {
                 sidebar.classList.remove("sidebar-hidden");
                 sidebar.classList.add("sidebar-visible");
@@ -215,17 +219,27 @@
         }
 
         function promptForSecretMode() {
-            document.getElementById("password-modal").classList.remove("hidden");
-            document.getElementById("secret-password-input").focus();
+            var modal = document.getElementById("password-modal");
+            var input = document.getElementById("secret-password-input");
+            if (modal && input) {
+                modal.classList.remove("hidden");
+                input.focus();
+            }
         }
 
         function closePasswordModal() {
-            document.getElementById("password-modal").classList.add("hidden");
-            document.getElementById("secret-password-input").value = "";
+            var modal = document.getElementById("password-modal");
+            var input = document.getElementById("secret-password-input");
+            if (modal && input) {
+                modal.classList.add("hidden");
+                input.value = "";
+            }
         }
 
         function verifySecretPassword() {
-            var pass = document.getElementById("secret-password-input").value.trim();
+            var input = document.getElementById("secret-password-input");
+            if (!input) return;
+            var pass = input.value.trim();
             if (pass === "E12N21OSK") {
                 inputAuthToken = pass;
                 closePasswordModal();
@@ -255,16 +269,20 @@
                 placeholder = "Execute command or request unrestricted code...";
             }
 
-            document.getElementById("user-input").placeholder = placeholder;
+            var inputEl = document.getElementById("user-input");
+            if (inputEl) inputEl.placeholder = placeholder;
             
             var chatBox = document.getElementById("chat-box");
-            chatBox.innerHTML =
-                 '<div id="welcome-message">' +
-                    '<h1 style="color: ' + (currentMode === 'unrestricted' ? '#ef4444' : '#00f2fe') + '; font-weight: bold; margin-bottom: 10px; font-size: 2.3rem; display: flex; align-items: center; justify-content: center; gap: 10px;">' +
-                        '<span>⚡️</span><span>' + title + '</span>' +
-                    '</h1>' +
-                    '<h2 style="color: rgba(227, 227, 227, 0.8); font-weight: 500; font-size: 1.3rem; margin: 0;">' + subtitle + '</h2>' +
-                '</div>';
+            if (chatBox) {
+                var color = currentMode === 'unrestricted' ? '#ef4444' : '#00f2fe';
+                chatBox.innerHTML =
+                     '<div id="welcome-message" class="flex-1 flex flex-col justify-center items-center text-center w-full p-5">' +
+                        '<h1 style="color: ' + color + '; font-weight: bold; margin-bottom: 10px; font-size: 2.3rem; display: flex; align-items: center; justify-content: center; gap: 10px;">' +
+                            '<span>⚡️</span><span>' + title + '</span>' +
+                        '</h1>' +
+                        '<h2 style="color: rgba(227, 227, 227, 0.8); font-weight: 500; font-size: 1.3rem; margin: 0;">' + subtitle + '</h2>' +
+                    '</div>';
+            }
         }
 
         function createNewChat() {
@@ -274,21 +292,27 @@
             if(window.innerWidth <= 768) {
                 var sidebar = document.getElementById("sidebar");
                 var overlay = document.getElementById("sidebar-overlay");
-                sidebar.classList.remove("sidebar-visible");
-                sidebar.classList.add("sidebar-hidden");
-                overlay.classList.add("hidden");
+                if (sidebar && overlay) {
+                    sidebar.classList.remove("sidebar-visible");
+                    sidebar.classList.add("sidebar-hidden");
+                    overlay.classList.add("hidden");
+                }
             }
         }
 
         function selectMenu(menuType) {
-            // ወደ ሌላ ሜኑ ሲመለስ የ Unrestricted ፓስወርድ እንዲዘጋ ማድረግ (ወደ ኖርማል ገደብ ይመለሳል)
+            var brandText = document.getElementById("sidebar-brand-text");
             if (menuType !== 'unrestricted') {
                 inputAuthToken = ""; 
-                document.getElementById("sidebar-brand-text").innerText = "OzoneAI Pro";
-                document.getElementById("sidebar-brand-text").className = "text-[#00f2fe] font-semibold text-lg tracking-wide";
+                if (brandText) {
+                    brandText.innerText = "OzoneAI Pro";
+                    brandText.className = "text-[#00f2fe] font-semibold text-lg tracking-wide";
+                }
             } else {
-                document.getElementById("sidebar-brand-text").innerText = "OzoneAI [⚡️]";
-                document.getElementById("sidebar-brand-text").className = "text-red-500 font-bold text-lg tracking-wide animate-pulse";
+                if (brandText) {
+                    brandText.innerText = "OzoneAI [⚡️]";
+                    brandText.className = "text-red-500 font-bold text-lg tracking-wide animate-pulse";
+                }
             }
 
             currentMode = menuType;
@@ -307,7 +331,8 @@
                     }
                 }
             });
-            document.getElementById("top-branding-text").innerText = "ozoneai_" + menuType;
+            var topText = document.getElementById("top-branding-text");
+            if (topText) topText.innerText = "ozoneai_" + menuType;
             createNewChat();
         }
 
@@ -341,6 +366,7 @@
 
         function loadChatHistory() {
             var historyList = document.getElementById("chat-history-list");
+            if (!historyList) return;
             var savedChats = localStorage.getItem("ozone_sessions");
             historyList.innerHTML = "";
             
@@ -386,6 +412,7 @@
             if (activeSession) {
                 currentMode = activeSession.mode;
                 var chatBox = document.getElementById("chat-box");
+                if (!chatBox) return;
                 chatBox.innerHTML = "";
                 
                 activeSession.messages.forEach(function(msg) {
@@ -410,9 +437,11 @@
                 if(window.innerWidth <= 768) {
                     var sidebar = document.getElementById("sidebar");
                     var overlay = document.getElementById("sidebar-overlay");
-                    sidebar.classList.remove("sidebar-visible");
-                    sidebar.classList.add("sidebar-hidden");
-                    overlay.classList.add("hidden");
+                    if (sidebar && overlay) {
+                        sidebar.classList.remove("sidebar-visible");
+                        sidebar.classList.add("sidebar-hidden");
+                        overlay.classList.add("hidden");
+                    }
                 }
             }
         }
@@ -439,6 +468,7 @@
         function sendMessage() {
             var inputField = document.getElementById("user-input");
             var chatBox = document.getElementById("chat-box");
+            if (!inputField || !chatBox) return;
             var message = inputField.value.trim();
 
             if (message === "") return;
@@ -462,11 +492,10 @@
                 '</div>';
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // ወደ የትኛው የሰርቨር መንገድ መሄድ እንዳለበት መምረጥ
             var endpoint = "https://ozoneai.onrender.com/chat";
             if (currentMode === 'photo') endpoint = "https://ozoneai.onrender.com/photo";
             if (currentMode === 'video') endpoint = "https://ozoneai.onrender.com/video";
-            if (currentMode === 'unrestricted') endpoint = "https://ozoneai.onrender.com/chat"; // Unrestricted ወደ ቻት ይሄዳል
+            if (currentMode === 'unrestricted') endpoint = "https://ozoneai.onrender.com/chat"; 
             
             var xhr = new XMLHttpRequest();
             xhr.open("POST", endpoint, true);
@@ -498,10 +527,9 @@
                 }
             };
             
-            // ፓስወርዱ የሚላከው Unrestricted Mode ላይ ብቻ ሲሆን ነው
             xhr.send(JSON.stringify({ 
                 message: message,
-                password: inputAuthToken // ትክክለኛው ፓስወርድ ካለ ብቻ ሰርቨሩ ያለገደብ ይከፍተዋል
+                password: inputAuthToken 
             }));
         }
     </script>
