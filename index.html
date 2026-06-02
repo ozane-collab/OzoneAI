@@ -78,7 +78,7 @@
         <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
             <div class="flex items-center gap-2">
                 <span class="text-base">⚡️</span>
-                <span class="text-[#00f2fe] font-semibold text-lg tracking-wide">OzoneAI Pro</span>
+                <span id="sidebar-brand-text" class="text-[#00f2fe] font-semibold text-lg tracking-wide">OzoneAI Pro</span>
             </div>
             <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white md:hidden text-lg p-1">
                 <i class="fa-solid fa-xmark"></i>
@@ -94,6 +94,10 @@
             </button>
             <button onclick="selectMenu('video')" id="menu-video" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left mb-2">
                 <i class="fa-solid fa-clapperboard text-red-400"></i> Video Automation
+            </button>
+
+            <button onclick="promptForSecretMode()" id="menu-unrestricted" class="w-full text-gray-500 hover:text-red-400 hover:bg-red-950/10 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-dashed border-gray-800/60">
+                <i class="fa-solid fa-unlock-keyhole"></i> ⚙️ Advanced Controls
             </button>
             
             <div class="border-t border-gray-800/60 my-2 pt-2 flex flex-col flex-1">
@@ -137,10 +141,25 @@
         </div>
     </div>
 
+    <div id="password-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+        <div class="bg-[#1e1f20] border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
+            <div class="w-12 h-12 bg-red-950/30 border border-red-900/40 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3 class="text-white font-semibold text-lg mb-1">Enter Control Password</h3>
+            <p class="text-gray-400 text-xs mb-4">Verification required to unlock Unrestricted Developer Mode.</p>
+            <input type="password" id="secret-password-input" placeholder="••••••••" class="w-full bg-[#131314] border border-gray-800 rounded-xl px-4 py-3 text-center text-white text-lg tracking-widest outline-none focus:border-red-500/50 mb-4">
+            <div class="flex gap-2">
+                <button onclick="closePasswordModal()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm py-2.5 rounded-xl transition cursor-pointer">Cancel</button>
+                <button onclick="verifySecretPassword()" class="flex-1 bg-red-600 hover:bg-red-500 text-white text-sm py-2.5 rounded-xl font-medium transition cursor-pointer">Unlock</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         var currentChatId = null;
-        var currentMode = 'chat';
-        var MY_SECRET_PASSWORD = "E12N21OSK"; // የሰርቨሩ ሚስጥር ቃል
+        var currentMode = 'chat'; // 'chat', 'photo', 'video', 'unrestricted'
+        var inputAuthToken = ""; 
 
         window.onload = function() {
             var inputElement = document.getElementById("user-input");
@@ -195,10 +214,32 @@
             }
         }
 
+        function promptForSecretMode() {
+            document.getElementById("password-modal").classList.remove("hidden");
+            document.getElementById("secret-password-input").focus();
+        }
+
+        function closePasswordModal() {
+            document.getElementById("password-modal").classList.add("hidden");
+            document.getElementById("secret-password-input").value = "";
+        }
+
+        function verifySecretPassword() {
+            var pass = document.getElementById("secret-password-input").value.trim();
+            if (pass === "E12N21OSK") {
+                inputAuthToken = pass;
+                closePasswordModal();
+                selectMenu('unrestricted');
+            } else {
+                alert("❌ Incorrect Password Access Denied.");
+                closePasswordModal();
+            }
+        }
+
         function showWelcomeMessage() {
             var title = "OzoneAI";
             var subtitle = "How can I help you today?";
-            var placeholder = "Message OzoneAI..."
+            var placeholder = "Message OzoneAI...";
 
             if (currentMode === 'photo') {
                 title = "Ozone Photo AI";
@@ -208,6 +249,10 @@
                 title = "Ozone Video Automation";
                 subtitle = "Create & structure video scripts.";
                 placeholder = "Enter video topic or concept...";
+            } else if (currentMode === 'unrestricted') {
+                title = "OzoneAI [UNRESTRICTED]";
+                subtitle = "Developer Backdoor Active. All parameters open.";
+                placeholder = "Execute command or request unrestricted code...";
             }
 
             document.getElementById("user-input").placeholder = placeholder;
@@ -215,7 +260,7 @@
             var chatBox = document.getElementById("chat-box");
             chatBox.innerHTML =
                  '<div id="welcome-message">' +
-                    '<h1 style="color: #00f2fe; font-weight: bold; margin-bottom: 10px; font-size: 2.3rem; display: flex; align-items: center; justify-content: center; gap: 10px;">' +
+                    '<h1 style="color: ' + (currentMode === 'unrestricted' ? '#ef4444' : '#00f2fe') + '; font-weight: bold; margin-bottom: 10px; font-size: 2.3rem; display: flex; align-items: center; justify-content: center; gap: 10px;">' +
                         '<span>⚡️</span><span>' + title + '</span>' +
                     '</h1>' +
                     '<h2 style="color: rgba(227, 227, 227, 0.8); font-weight: 500; font-size: 1.3rem; margin: 0;">' + subtitle + '</h2>' +
@@ -236,15 +281,29 @@
         }
 
         function selectMenu(menuType) {
+            // ወደ ሌላ ሜኑ ሲመለስ የ Unrestricted ፓስወርድ እንዲዘጋ ማድረግ (ወደ ኖርማል ገደብ ይመለሳል)
+            if (menuType !== 'unrestricted') {
+                inputAuthToken = ""; 
+                document.getElementById("sidebar-brand-text").innerText = "OzoneAI Pro";
+                document.getElementById("sidebar-brand-text").className = "text-[#00f2fe] font-semibold text-lg tracking-wide";
+            } else {
+                document.getElementById("sidebar-brand-text").innerText = "OzoneAI [⚡️]";
+                document.getElementById("sidebar-brand-text").className = "text-red-500 font-bold text-lg tracking-wide animate-pulse";
+            }
+
             currentMode = menuType;
-            var menus = ['chat', 'photo', 'video'];
+            var menus = ['chat', 'photo', 'video', 'unrestricted'];
             menus.forEach(function(m) {
                 var el = document.getElementById('menu-' + m);
                 if (el) {
                     if (m === menuType) {
-                        el.className = "w-full bg-[#282a2c] text-white text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left";
+                        el.className = m === 'unrestricted' ? 
+                            "w-full bg-red-950/40 text-red-400 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left border border-red-900/50" :
+                            "w-full bg-[#282a2c] text-white text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left";
                     } else {
-                        el.className = "w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left";
+                        el.className = m === 'unrestricted' ?
+                            "w-full text-gray-500 hover:text-red-400 hover:bg-red-950/10 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-dashed border-gray-800/60" :
+                            "w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left";
                     }
                 }
             });
@@ -403,9 +462,11 @@
                 '</div>';
             chatBox.scrollTop = chatBox.scrollHeight;
 
+            // ወደ የትኛው የሰርቨር መንገድ መሄድ እንዳለበት መምረጥ
             var endpoint = "https://ozoneai.onrender.com/chat";
             if (currentMode === 'photo') endpoint = "https://ozoneai.onrender.com/photo";
             if (currentMode === 'video') endpoint = "https://ozoneai.onrender.com/video";
+            if (currentMode === 'unrestricted') endpoint = "https://ozoneai.onrender.com/chat"; // Unrestricted ወደ ቻት ይሄዳል
             
             var xhr = new XMLHttpRequest();
             xhr.open("POST", endpoint, true);
@@ -437,10 +498,10 @@
                 }
             };
             
-            // 🔒 የይለፍ ቃሉን (password) ከጥያቄው ጋር አብሮ ወደ Python ሰርቨር መላክ
+            // ፓስወርዱ የሚላከው Unrestricted Mode ላይ ብቻ ሲሆን ነው
             xhr.send(JSON.stringify({ 
                 message: message,
-                password: MY_SECRET_PASSWORD 
+                password: inputAuthToken // ትክክለኛው ፓስወርድ ካለ ብቻ ሰርቨሩ ያለገደብ ይከፍተዋል
             }));
         }
     </script>
