@@ -74,6 +74,7 @@
 
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
 
+    <!-- SIDEBAR -->
     <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
         <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
             <div class="flex items-center gap-2">
@@ -96,13 +97,15 @@
                 <i class="fa-solid fa-clapperboard text-red-400"></i> Video Automation
             </button>
 
-            <button onclick="promptForSecretMode()" id="menu-unrestricted" class="w-full text-gray-500 hover:text-red-400 hover:bg-red-950/10 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-dashed border-gray-800/60">
-                <i class="fa-solid fa-unlock-keyhole"></i> ⚙️ Advanced Controls
+            <!-- 🔒 Hidden Secret Menu (Only activated via secret taps) -->
+            <button onclick="promptForSecretMode()" id="menu-unrestricted" class="hidden w-full text-red-400 bg-red-950/20 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-red-900/40">
+                <i class="fa-solid fa-unlock-keyhole"></i> Admin Panel Active
             </button>
             
             <div class="border-t border-gray-800/60 my-2 pt-2 flex flex-col flex-1">
                 <div class="flex justify-between items-center px-3 mb-2">
-                    <span class="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Recent Chats</span>
+                    <!-- Secret trigger: Tapping this text 3 times unlocks the password prompt -->
+                    <span onclick="secretTapTrigger()" class="text-[11px] text-gray-500 font-medium uppercase tracking-wider cursor-pointer select-none">Recent Chats</span>
                     <button onclick="clearAllHistory()" class="text-gray-600 hover:text-red-400 text-xs transition cursor-pointer">
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
@@ -112,6 +115,7 @@
         </div>
     </div>
 
+    <!-- MAIN CHAT INTERFACE -->
     <div class="main-container bg-[#131314] overflow-hidden relative">
         <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0">
             <div class="flex items-center gap-3">
@@ -137,17 +141,17 @@
                     <i class="fa-solid fa-paper-plane text-sm"></i>
                 </button>
             </div>
-            <div class="text-center text-[10px] text-gray-500 mt-2 px-4">OzoneAI may display inaccurate info, so double-check its responses.</div>
         </div>
     </div>
 
+    <!-- PASSWORD MODAL POPUP -->
     <div id="password-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
         <div class="bg-[#1e1f20] border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
             <div class="w-12 h-12 bg-red-950/30 border border-red-900/40 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
                 <i class="fa-solid fa-shield-halved"></i>
             </div>
-            <h3 class="text-white font-semibold text-lg mb-1">Enter Control Password</h3>
-            <p class="text-gray-400 text-xs mb-4">Verification required to unlock Unrestricted Developer Mode.</p>
+            <h3 class="text-white font-semibold text-lg mb-1">System Override</h3>
+            <p class="text-gray-400 text-xs mb-4">Enter developer key to unlock unrestricted terminal.</p>
             <input type="password" id="secret-password-input" placeholder="••••••••" class="w-full bg-[#131314] border border-gray-800 rounded-xl px-4 py-3 text-center text-white text-lg tracking-widest outline-none focus:border-red-500/50 mb-4">
             <div class="flex gap-2">
                 <button onclick="closePasswordModal()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm py-2.5 rounded-xl transition cursor-pointer">Cancel</button>
@@ -160,6 +164,7 @@
         var currentChatId = null;
         var currentMode = 'chat'; 
         var inputAuthToken = ""; 
+        var secretTapCount = 0;
 
         window.onload = function() {
             var inputElement = document.getElementById("user-input");
@@ -190,6 +195,14 @@
         window.onresize = function() {
             setupResponsiveSidebar();
         };
+
+        function secretTapTrigger() {
+            secretTapCount++;
+            if (secretTapCount >= 3) {
+                secretTapCount = 0;
+                promptForSecretMode();
+            }
+        }
 
         function setupResponsiveSidebar() {
             var sidebar = document.getElementById("sidebar");
@@ -243,9 +256,13 @@
             if (pass === "E12N21OSK") {
                 inputAuthToken = pass;
                 closePasswordModal();
+                
+                var secretBtn = document.getElementById("menu-unrestricted");
+                if (secretBtn) secretBtn.classList.remove("hidden");
+                
                 selectMenu('unrestricted');
             } else {
-                alert("❌ Incorrect Password Access Denied.");
+                alert("❌ Access Denied.");
                 closePasswordModal();
             }
         }
@@ -308,6 +325,8 @@
                     brandText.innerText = "OzoneAI Pro";
                     brandText.className = "text-[#00f2fe] font-semibold text-lg tracking-wide";
                 }
+                var secretBtn = document.getElementById("menu-unrestricted");
+                if (secretBtn) secretBtn.classList.add("hidden");
             } else {
                 if (brandText) {
                     brandText.innerText = "OzoneAI [⚡️]";
@@ -326,7 +345,7 @@
                             "w-full bg-[#282a2c] text-white text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left";
                     } else {
                         el.className = m === 'unrestricted' ?
-                            "w-full text-gray-500 hover:text-red-400 hover:bg-red-950/10 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-dashed border-gray-800/60" :
+                            "w-full text-red-400 bg-red-950/20 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-red-900/40" :
                             "w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left";
                     }
                 }
