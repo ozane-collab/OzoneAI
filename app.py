@@ -62,10 +62,10 @@ def chat_endpoint():
             
         user_parts.append({"text": user_message})
 
-        # 🛠️ ማስተካከያ 1 እና 2፦ ስሪቱን ወደ v1፣ የሞዴል ስሙን ደግሞ ወደ gemini-1.5-flash-latest ቀይረነዋል
+        # 🔗 ወደ v1 API እና ወደ gemini-1.5-flash-latest የሚደረግ ጥሪ
         gemini_url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key={GEMINI_API_KEY}"
         
-        # 🛠️ ማስተካከያ 3፦ በ v1 ሥሪት መሠረት systemInstruction እና contents መዋቅር በትክክል ተቀምጧል
+        # 🛠️ ወሳኙ ማስተካከያ፦ በጉግል መመሪያ መሠረት systemInstruction ወደ system_instruction ተቀይሯል!
         payload = {
             "contents": [
                 {
@@ -73,7 +73,7 @@ def chat_endpoint():
                     "parts": user_parts
                 }
             ],
-            "systemInstruction": {
+            "system_instruction": {
                 "parts": [
                     {"text": system_instructions}
                 ]
