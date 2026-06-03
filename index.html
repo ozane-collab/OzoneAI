@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>OzoneAI Pro</title>
+    <title>OzoneAI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -31,7 +31,7 @@
         <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
             <div class="flex items-center gap-2">
                 <span class="text-base">⚡️</span>
-                <span id="sidebar-brand-text" class="text-[#00f2fe] font-semibold text-lg tracking-wide">OzoneAI Pro</span>
+                <span class="text-[#00f2fe] font-semibold text-lg tracking-wide">OzoneAI</span>
             </div>
             <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white md:hidden text-lg p-1">
                 <i class="fa-solid fa-xmark"></i>
@@ -59,7 +59,7 @@
                     <i class="fa-solid fa-bars"></i>
                 </button>
                 <div class="text-[#00f2fe] text-sm tracking-wide flex items-center gap-1.5 font-semibold">
-                    <span>⚡️</span><span id="top-branding-text">ozoneai_chat</span>
+                    <span>⚡️</span><span>ozoneai_chat</span>
                 </div>
             </div>
             <button onclick="createNewChat()" class="text-xs bg-[#1e1f20] hover:bg-[#282a2c] text-teal-400 px-3 py-1.5 rounded-full border border-gray-800 font-medium transition cursor-pointer flex items-center gap-1.5">
@@ -67,22 +67,35 @@
             </button>
         </div>
 
+        <!-- CHAT BOX -->
         <div id="chat-box" class="px-4 py-4 max-w-3xl w-full mx-auto flex-1 overflow-y-auto"></div>
 
+        <!-- INPUT CONTAINER WITH PHOTO/VIDEO BUTTONS -->
         <div class="p-4 bg-[#131314] flex-shrink-0 pb-safe">
             <div class="max-w-3xl mx-auto flex items-center bg-[#1e1f20] rounded-full px-4 py-2 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg">
+                
+                <!-- 📷 የፎቶ/ቪዲዮ መላኪያ በተን -->
+                <button onclick="triggerMediaUpload()" class="text-gray-400 hover:text-[#00f2fe] mr-2 p-2 rounded-full hover:bg-gray-800/40 transition cursor-pointer">
+                    <i class="fa-solid fa-circle-plus text-base"></i>
+                </button>
+                <input type="file" id="media-input" accept="image/*,video/*" class="hidden" onchange="handleMediaSelect(event)">
+
                 <input type="text" id="user-input" placeholder="Message OzoneAI..." class="flex-1 bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[15px] py-1.5 px-1" autocomplete="off">
+                
                 <button id="send-btn" onclick="sendMessage()" class="text-gray-400 hover:text-[#00f2fe] w-9 h-9 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 ml-1">
                     <i class="fa-solid fa-paper-plane text-sm"></i>
                 </button>
             </div>
+            <!-- የተመረጠ ሚዲያ ማሳያ ቅድመ እይታ (Preview) -->
+            <div id="media-preview" class="max-w-3xl mx-auto mt-2 hidden flex items-center gap-2 p-2 bg-[#1e1f20] rounded-xl w-fit"></div>
         </div>
     </div>
 
     <script>
         var RENDER_BASE_URL = "https://ozoneai.onrender.com"; 
         var currentChatId = null;
-        var currentMode = 'chat'; 
+        var selectedMediaBase64 = null;
+        var selectedMediaType = null;
 
         window.onload = function() {
             var inputElement = document.getElementById("user-input");
@@ -94,8 +107,6 @@
             loadChatHistory();
             showWelcomeMessage();
             setupResponsiveSidebar();
-            
-            // ⏰ ገጹ ሲከፈት ሰርቨሩን ወዲያው ለመቀስቀስ
             fetch(RENDER_BASE_URL + "/").catch(function(e){});
         };
 
@@ -123,13 +134,43 @@
             if (chatBox) {
                 chatBox.innerHTML =
                      '<div id="welcome-message">' +
-                        '<h1 style="color: #00f2fe; font-weight: bold; margin-bottom: 10px; font-size: 2.3rem;">⚡️ OzoneAI Pro</h1>' +
-                        '<h2 style="color: rgba(227, 227, 227, 0.8); font-weight: 500; font-size: 1.3rem;">How can I help you today? (0% Restrictions)</h2>' +
+                        '<h1 style="color: #00f2fe; font-weight: bold; margin-bottom: 10px; font-size: 2.3rem;">⚡️ OzoneAI</h1>' +
+                        '<h2 style="color: rgba(227, 227, 227, 0.8); font-weight: 500; font-size: 1.3rem;">How can I help you today?</h2>' +
                     '</div>';
             }
         }
 
-        function createNewChat() { currentChatId = null; showWelcomeMessage(); loadChatHistory(); }
+        function triggerMediaUpload() { document.getElementById('media-input').click(); }
+
+        function handleMediaSelect(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+            selectedMediaType = file.type;
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                selectedMediaBase64 = e.target.result;
+                var previewContainer = document.getElementById('media-preview');
+                previewContainer.classList.remove('hidden');
+                
+                if (file.type.startsWith('image/')) {
+                    previewContainer.innerHTML = '<img src="'+selectedMediaBase64+'" class="h-14 w-14 object-cover rounded-lg border border-gray-700"><button onclick="clearMediaSelection()" class="text-red-400 text-xs p-1"><i class="fa-solid fa-trash"></i></button>';
+                } else if (file.type.startsWith('video/')) {
+                    previewContainer.innerHTML = '<div class="h-14 w-14 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700"><i class="fa-solid fa-video text-gray-400"></i></div><button onclick="clearMediaSelection()" class="text-red-400 text-xs p-1"><i class="fa-solid fa-trash"></i></button>';
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearMediaSelection() {
+            selectedMediaBase64 = null;
+            selectedMediaType = null;
+            document.getElementById('media-input').value = "";
+            document.getElementById('media-preview').classList.add('hidden');
+            document.getElementById('media-preview').innerHTML = "";
+        }
+
+        function createNewChat() { currentChatId = null; showWelcomeMessage(); loadChatHistory(); clearMediaSelection(); }
 
         function saveMessageToHistory(role, text) {
             var savedChats = localStorage.getItem("ozone_sessions");
@@ -138,7 +179,7 @@
 
             if (currentChatId === null) {
                 currentChatId = "chat_" + Date.now();
-                sessions.unshift({ id: currentChatId, mode: currentMode, title: text.substring(0, 15), messages: [msgObj] });
+                sessions.unshift({ id: currentChatId, title: text.substring(0, 15), messages: [msgObj] });
             } else {
                 for (var i = 0; i < sessions.length; i++) {
                     if (sessions[i].id === currentChatId) { sessions[i].messages.push(msgObj); break; }
@@ -187,52 +228,58 @@
             var inputField = document.getElementById("user-input");
             var chatBox = document.getElementById("chat-box");
             var message = inputField.value.trim();
-            if (message === "") return;
+            if (message === "" && !selectedMediaBase64) return;
 
             var welcome = document.getElementById("welcome-message");
             if (welcome) welcome.remove();
             
-            chatBox.innerHTML += '<div style="display: flex; justify-content: flex-end; width: 100%; padding: 4px 0;"><div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words">'+message+'</div></div>';
-            saveMessageToHistory("user", message);
+            var userDisplayHTML = '<div style="display: flex; justify-content: flex-end; width: 100%; padding: 4px 0;"><div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words">';
+            if (selectedMediaBase64 && selectedMediaType.startsWith('image/')) {
+                userDisplayHTML += '<img src="'+selectedMediaBase64+'" class="max-w-xs max-h-48 rounded-lg mb-2">';
+            } else if (selectedMediaBase64 && selectedMediaType.startsWith('video/')) {
+                userDisplayHTML += '<div class="text-teal-400 text-sm mb-2"><i class="fa-solid fa-video"></i> Sent a video</div>';
+            }
+            userDisplayHTML += message + '</div></div>';
+            
+            chatBox.innerHTML += userDisplayHTML;
+            saveMessageToHistory("user", message || "[Media Attachment]");
             inputField.value = "";
             chatBox.scrollTop = chatBox.scrollHeight;
 
             var loadingId = "loading-" + Date.now();
-            chatBox.innerHTML += '<div id="'+loadingId+'" class="flex justify-start w-full py-2 animate-pulse"><div class="text-gray-400 text-sm thinking-dots">OzoneAI is generation response</div></div>';
+            chatBox.innerHTML += '<div id="'+loadingId+'" class="flex justify-start w-full py-2 animate-pulse"><div class="text-gray-400 text-sm thinking-dots">OzoneAI is thinking</div></div>';
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // ⚡️ ወደ ዋናው /chat endpoint ነው ጥያቄው የሚሄደው
-            var endpoint = RENDER_BASE_URL + "/chat";
-
-            function makeRequest(attemptsLeft) {
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", endpoint, true);
-                xhr.setRequestHeader("Content-Type", "application/json");
-                xhr.timeout = 60000;
-
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === 4) {
-                        var loadingEl = document.getElementById(loadingId);
-                        if (xhr.status === 200) {
-                            if (loadingEl) loadingEl.remove();
-                            var data = JSON.parse(xhr.responseText);
-                            chatBox.innerHTML += '<div style="display: flex; justify-content: flex-start; width: 100%; padding: 4px 0;"><div class="text-[#e3e3e3] text-[15px] leading-relaxed break-words whitespace-pre-line">'+data.reply+'</div></div>';
-                            saveMessageToHistory("ai", data.reply);
-                            chatBox.scrollTop = chatBox.scrollHeight;
-                        } else {
-                            if (attemptsLeft > 0) {
-                                setTimeout(function() { makeRequest(attemptsLeft - 1); }, 4000);
-                            } else {
-                                if (loadingEl) loadingEl.remove();
-                                chatBox.innerHTML += '<div class="text-red-400 text-xs py-2">⚠️ Connection failed. Please try again.</div>';
-                                chatBox.scrollTop = chatBox.scrollHeight;
-                            }
-                        }
-                    }
-                };
-                xhr.send(JSON.stringify({ message: message }));
+            var payload = { message: message };
+            if (selectedMediaBase64) {
+                payload.media = selectedMediaBase64;
+                payload.media_type = selectedMediaType;
             }
-            makeRequest(5);
+
+            clearMediaSelection();
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", RENDER_BASE_URL + "/chat", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.timeout = 60000;
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    var loadingEl = document.getElementById(loadingId);
+                    if (xhr.status === 200) {
+                        if (loadingEl) loadingEl.remove();
+                        var data = JSON.parse(xhr.responseText);
+                        chatBox.innerHTML += '<div style="display: flex; justify-content: flex-start; width: 100%; padding: 4px 0;"><div class="text-[#e3e3e3] text-[15px] leading-relaxed break-words whitespace-pre-line">'+data.reply+'</div></div>';
+                        saveMessageToHistory("ai", data.reply);
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    } else {
+                        if (loadingEl) loadingEl.remove();
+                        chatBox.innerHTML += '<div class="text-red-400 text-xs py-2">⚠️ Connection failed. Please try again.</div>';
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    }
+                }
+            };
+            xhr.send(JSON.stringify(payload));
         }
     </script>
 </body>
