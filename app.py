@@ -65,10 +65,10 @@ def chat_endpoint():
         combined_text = f"{system_instructions}User Prompt: {user_message}"
         parts.append({"text": combined_text})
 
-        # 🔗 ወደ Gemini API የሚላክ ቀጥተኛ ጥሪ (v1)
-        gemini_url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+        # 🔗 ወደ Gemini API የሚላክ ቀጥተኛ ጥሪ - በ v1beta እና በትክክለኛው የሞዴል ስም የተስተካከለ
+        gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
         
-        # የ JSON መዋቅሩ አሁን እጅግ በጣም ቀላል እና ከስህተት የጸዳ ነው
+        # የ JSON መዋቅር
         payload = {
             "contents": [{"parts": parts}],
             "generationConfig": {
