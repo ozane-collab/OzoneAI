@@ -62,10 +62,10 @@ def chat_endpoint():
             
         user_parts.append({"text": user_message})
 
-        # 🔗 ወደ v1 API እና ወደ gemini-1.5-flash-latest የሚደረግ ጥሪ
-        gemini_url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key={GEMINI_API_KEY}"
+        # 🔗 1. በምስሉ መመሪያ መሠረት ወደ v1beta Endpoint እንመልሰዋለን
+        gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
         
-        # 🛠️ ወሳኙ ማስተካከያ፦ በጉግል መመሪያ መሠረት systemInstruction ወደ system_instruction ተቀይሯል!
+        # 🛠️ 2. በ image_49.png መመሪያ መሠረት ለ v1beta ትክክለኛው ቃል system_instruction (በስር ሰረዝ) ነው!
         payload = {
             "contents": [
                 {
