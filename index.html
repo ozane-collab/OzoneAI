@@ -10,13 +10,15 @@
         html, body {
             margin: 0;
             padding: 0;
-            height: 100%;
+            height: 100vh;
+            height: 100dvh; /* 📱 ስልክ ላይ ከኪቦርድ ጋር አብሮ የሚሰበሰብ ቁመት */
             width: 100%;
             background-color: #131314;
             color: #e3e3e3;
             font-family: sans-serif;
             overflow: hidden;
             display: flex;
+            -webkit-tap-highlight-color: transparent;
         }
         
         .main-container {
@@ -34,6 +36,7 @@
             flex: 1 !important;
             overflow-y: auto !important;
             min-height: 0 !important;
+            scroll-behavior: smooth;
         }
 
         #welcome-message {
@@ -74,7 +77,6 @@
 
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
 
-    <!-- SIDEBAR -->
     <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
         <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
             <div class="flex items-center gap-2">
@@ -97,7 +99,6 @@
                 <i class="fa-solid fa-clapperboard text-red-400"></i> Video Automation
             </button>
 
-            <!-- 🔒 Hidden Secret Menu -->
             <button onclick="promptForSecretMode()" id="menu-unrestricted" class="hidden w-full text-red-400 bg-red-950/20 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-red-900/40">
                 <i class="fa-solid fa-unlock-keyhole"></i> Admin Panel Active
             </button>
@@ -114,7 +115,6 @@
         </div>
     </div>
 
-    <!-- MAIN CHAT INTERFACE -->
     <div class="main-container bg-[#131314] overflow-hidden relative">
         <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0">
             <div class="flex items-center gap-3">
@@ -143,7 +143,6 @@
         </div>
     </div>
 
-    <!-- PASSWORD MODAL POPUP -->
     <div id="password-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
         <div class="bg-[#1e1f20] border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
             <div class="w-12 h-12 bg-red-950/30 border border-red-900/40 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
@@ -160,7 +159,6 @@
     </div>
 
     <script>
-        // ✅ HTTPS ስህተቱ እዚህ ጋ በትክክል ተስተካክሏል!
         var RENDER_BASE_URL = "https://ozoneai.onrender.com"; 
 
         var currentChatId = null;
@@ -177,15 +175,13 @@
                         sendMessage();
                     }
                 };
-            }
 
-            if (window.visualViewport) {
-                window.visualViewport.addEventListener('resize', function() {
-                    document.body.style.height = window.visualViewport.height + 'px';
+                // 📱 ኪቦርዱ ስልክ ላይ ሲነሳ ቻቱን በራስ ሰር ወደ መጨረሻው መልእክት ያንሸራትታል
+                inputElement.addEventListener('focus', function() {
                     setTimeout(function() {
                         var chatBox = document.getElementById("chat-box");
-                        if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
-                    }, 100);
+                        if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+                    }, 300);
                 });
             }
 
@@ -196,6 +192,8 @@
 
         window.onresize = function() {
             setupResponsiveSidebar();
+            var chatBox = document.getElementById("chat-box");
+            if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
         };
 
         function secretTapTrigger() {
@@ -298,7 +296,7 @@
                      '<div id="welcome-message" class="flex-1 flex flex-col justify-center items-center text-center w-full p-5">' +
                         '<h1 style="color: ' + color + '; font-weight: bold; margin-bottom: 10px; font-size: 2.3rem; display: flex; align-items: center; justify-content: center; gap: 10px;">' +
                             '<span>⚡️</span><span>' + title + '</span>' +
-                        '</h1>' +
+                        </h1>' +
                         '<h2 style="color: rgba(227, 227, 227, 0.8); font-weight: 500; font-size: 1.3rem; margin: 0;">' + subtitle + '</h2>' +
                     '</div>';
             }
@@ -513,9 +511,11 @@
                 '</div>';
             chatBox.scrollTop = chatBox.scrollHeight;
 
+            // 🛠 እዚህ ጋር መንገዶቹ ከባክኤንዱ ጋር አንድ አይነት እንዲሆኑ ተስተካክለዋል!
             var endpoint = RENDER_BASE_URL + "/chat";
             if (currentMode === 'photo') endpoint = RENDER_BASE_URL + "/photo";
             if (currentMode === 'video') endpoint = RENDER_BASE_URL + "/video";
+            if (currentMode === 'unrestricted') endpoint = RENDER_BASE_URL + "/chat"; // አድሚንም ወደ /chat ነው የሚሄደው
             
             var xhr = new XMLHttpRequest();
             xhr.open("POST", endpoint, true);
