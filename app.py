@@ -62,9 +62,10 @@ def chat_endpoint():
             
         user_parts.append({"text": user_message})
 
-        # 🛠️ ዋናው ማስተካከያ፦ ሞዴሉን ወደ gemini-1.5-flash-latest ቀይረነዋል
-        gemini_url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key={GEMINI_API_KEY}"
+        # 🛠️ ማስተካከያ 1፦ ወደ v1beta እና ወደ መደበኛው gemini-1.5-flash መልሰነዋል
+        gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
         
+        # 🛠️ ማስተካከያ 2፦ v1beta ስሪት ያለ ምንም ስህተት እንዲቀበለው መመሪያውን በዚህ መንገድ አስተካክለነዋል
         payload = {
             "contents": [
                 {
