@@ -62,12 +62,13 @@ def chat_endpoint():
             
         parts.append({"text": user_message})
 
-        # 🛠️ ማስተካከያ፦ እዚህ ጋር የ API ስሪቱን ወደ 'v1' እና የሞዴል አጻጻፉን አስተካክለነዋል
+        # 🔗 ወደ እውነተኛው Gemini API የሚላክ ጥሪ (v1)
         gemini_url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
         
+        # 🛠️ ማስተካከያ፦ 'systemInstruction' የነበረውን ወደ 'system_instruction' ቀይረነዋል
         payload = {
             "contents": [{"parts": parts}],
-            "systemInstruction": {"parts": [{"text": system_instructions}]},
+            "system_instruction": {"parts": [{"text": system_instructions}]},
             "generationConfig": {
                 "temperature": 0.9 if is_unrestricted_request else 0.4
             }
