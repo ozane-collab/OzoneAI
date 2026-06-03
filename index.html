@@ -75,7 +75,6 @@
 
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
 
-    <!-- SIDEBAR -->
     <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
         <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
             <div class="flex items-center gap-2">
@@ -98,9 +97,8 @@
                 <i class="fa-solid fa-clapperboard text-red-400"></i> Video Automation
             </button>
 
-            <!-- 🔒 Hidden Secret Menu -->
             <button onclick="promptForSecretMode()" id="menu-unrestricted" class="hidden w-full text-red-400 bg-red-950/20 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-red-900/40">
-                <i class="fa-solid fa-unlock-keyhole"></i> Admin Panel Active
+                <i id="lock-icon" class="fa-solid fa-lock text-red-500"></i> <span id="admin-text">Admin Panel Inactive</span>
             </button>
             
             <div class="border-t border-gray-800/60 my-2 pt-2 flex flex-col flex-1">
@@ -115,7 +113,6 @@
         </div>
     </div>
 
-    <!-- MAIN CHAT INTERFACE -->
     <div class="main-container bg-[#131314] overflow-hidden relative">
         <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0">
             <div class="flex items-center gap-3">
@@ -144,7 +141,6 @@
         </div>
     </div>
 
-    <!-- PASSWORD MODAL POPUP -->
     <div id="password-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
         <div class="bg-[#1e1f20] border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
             <div class="w-12 h-12 bg-red-950/30 border border-red-900/40 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
@@ -167,6 +163,7 @@
         var currentMode = 'chat'; 
         var inputAuthToken = ""; 
         var secretTapCount = 0;
+        var isAdminUnlocked = false; // Admin ተከፍቷል ወይስ አልተከፈተም የሚቆጣጠር
 
         window.onload = function() {
             var inputElement = document.getElementById("user-input");
@@ -187,6 +184,8 @@
             secretTapCount++;
             if (secretTapCount >= 3) {
                 secretTapCount = 0;
+                var secretBtn = document.getElementById("menu-unrestricted");
+                if (secretBtn) secretBtn.classList.remove("hidden");
                 promptForSecretMode();
             }
         }
@@ -219,6 +218,11 @@
         }
 
         function promptForSecretMode() {
+            if (isAdminUnlocked && currentMode !== 'unrestricted') {
+                // ቀድሞውኑ ፓስዋርድ በትክክል ከተሞላ ቀጥታ ይክፈተው
+                selectMenu('unrestricted');
+                return;
+            }
             var modal = document.getElementById("password-modal");
             var input = document.getElementById("secret-password-input");
             if (modal && input) {
@@ -242,10 +246,18 @@
             var pass = input.value.trim();
             if (pass === "E12N21OSK") {
                 inputAuthToken = pass;
+                isAdminUnlocked = true; // አድሚን መብቱን አገኘ
                 closePasswordModal();
                 
-                var secretBtn = document.getElementById("menu-unrestricted");
-                if (secretBtn) secretBtn.classList.remove("hidden");
+                // UI ማስተካከያ (መቆለፊያውን መክፈት)
+                var lockIcon = document.getElementById("lock-icon");
+                var adminText = document.getElementById("admin-text");
+                if (lockIcon) {
+                    lockIcon.className = "fa-solid fa-lock-open text-green-400";
+                }
+                if (adminText) {
+                    adminText.innerText = "Admin Panel Active";
+                }
                 
                 selectMenu('unrestricted');
             } else {
@@ -306,14 +318,22 @@
 
         function selectMenu(menuType) {
             var brandText = document.getElementById("sidebar-brand-text");
+            
+            // ከ Unrestricted Mode ሲወጣ አድሚን ይቆለፋል፣ ሂስትሪውም ወዲያው ይደበቃል
             if (menuType !== 'unrestricted') {
                 inputAuthToken = ""; 
+                isAdminUnlocked = false; // መብቱን መዝጋት
                 if (brandText) {
                     brandText.innerText = "OzoneAI Pro";
                     brandText.className = "text-[#00f2fe] font-semibold text-lg tracking-wide";
                 }
                 var secretBtn = document.getElementById("menu-unrestricted");
                 if (secretBtn) secretBtn.classList.add("hidden");
+                
+                var lockIcon = document.getElementById("lock-icon");
+                var adminText = document.getElementById("admin-text");
+                if (lockIcon) lockIcon.className = "fa-solid fa-lock text-red-500";
+                if (adminText) adminText.innerText = "Admin Panel Inactive";
             } else {
                 if (brandText) {
                     brandText.innerText = "OzoneAI [⚡️]";
@@ -370,6 +390,7 @@
             loadChatHistory();
         }
 
+        // 🔒 የ Unrestricted ሂስትሪዎችን የሚደብቀው ዋናው ሎጂክ እዚህ አለ
         function loadChatHistory() {
             var historyList = document.getElementById("chat-history-list");
             if (!historyList) return;
@@ -378,8 +399,17 @@
             
             if (savedChats) {
                 var sessions = JSON.parse(savedChats);
-                if (sessions.length > 0) {
-                    sessions.forEach(function(session) {
+                
+                // ⚡️ የማጣሪያ ሎጂክ፦ Admin ካልተከፈተ የ UNRESTRICTED ሂስትሪዎችን አሳይ
+                var filteredSessions = sessions.filter(function(session) {
+                    if (session.mode === 'unrestricted' && !isAdminUnlocked) {
+                        return false; // ይደበቅ
+                    }
+                    return true; // ሌሎች ይታዩ
+                });
+
+                if (filteredSessions.length > 0) {
+                    filteredSessions.forEach(function(session) {
                         var displayTitle = session.title;
                         if (displayTitle.length > 20) displayTitle = displayTitle.substring(0, 18) + "...";
                         var isActive = session.id === currentChatId ? "bg-[#282a2c]/60 text-white" : "text-gray-400";
@@ -412,6 +442,18 @@
             
             if (activeSession) {
                 currentMode = activeSession.mode;
+                
+                // ሂስትሪው ከተጫነ በኋላ አድሚን ሁነታውን ክፍት ያድርገው
+                if (currentMode === 'unrestricted') {
+                    isAdminUnlocked = true;
+                    var lockIcon = document.getElementById("lock-icon");
+                    var adminText = document.getElementById("admin-text");
+                    var secretBtn = document.getElementById("menu-unrestricted");
+                    if (secretBtn) secretBtn.classList.remove("hidden");
+                    if (lockIcon) lockIcon.className = "fa-solid fa-lock-open text-green-400";
+                    if (adminText) adminText.innerText = "Admin Panel Active";
+                }
+
                 var chatBox = document.getElementById("chat-box");
                 if (!chatBox) return;
                 chatBox.innerHTML = "";
@@ -455,7 +497,6 @@
             }
         }
 
-        // 🚀 መልእክት በጥሩ ሁኔታ የሚልከው ዘመናዊው FETCH ዘዴ
         function sendMessage() {
             var inputField = document.getElementById("user-input");
             var chatBox = document.getElementById("chat-box");
@@ -483,13 +524,11 @@
                 '</div>';
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // የመንገዶች ማስተካከያ (Endpoints)
             var endpoint = RENDER_BASE_URL + "/chat";
             if (currentMode === 'photo') endpoint = RENDER_BASE_URL + "/photo";
             if (currentMode === 'video') endpoint = RENDER_BASE_URL + "/video";
             if (currentMode === 'unrestricted') endpoint = RENDER_BASE_URL + "/chat";
             
-            // በ FETCH ኤፒአይ ሪኩዌስት ማድረግ
             fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -518,7 +557,7 @@
                 if (loadingEl) loadingEl.remove();
                 chatBox.innerHTML += 
                     '<div class="flex justify-start w-full pl-1 py-1">' +
-                        '<div class="bg-red-950/20 text-red-400/90 text-xs rounded-xl px-4 py-2 border border-red-900/30">⚠️ Connection failed. Check Render backend.</div>' +
+                        '<div class="bg-red-950/20 text-red-400/90 text-xs rounded-xl px-4 py-2 border border-red-900/30">⚠️ Connection failed. Please try again.</div>' +
                     '</div>';
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
