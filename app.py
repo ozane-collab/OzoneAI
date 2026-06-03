@@ -11,7 +11,6 @@ SECRET_PASSWORD = "E12N21OSK"
 # ለምሳሌ ያህል የተቀመጠ የሂስትሪ ዳታቤዝ
 chat_sessions_db = {}
 
-# ⚡️ ለሁለቱ ሞዶች የተዘጋጁ የተለያዩ መመሪያዎች (System Prompts)
 NORMAL_SYSTEM_PROMPT = (
     "You are a helpful, polite, and safe AI assistant. "
     "You must follow standard safety guidelines. If the user asks for dangerous, "
@@ -33,11 +32,8 @@ def chat_endpoint():
     user_message = data.get("message", "").strip()
     user_password = data.get("password", "").strip()
     chat_id = data.get("chat_id", None)
-    
-    # የትኛው Mode እንደሆነ ከሪኩዌስቱ እንቀበላለን (ካላለፈ 'chat' ይሆናል)
     current_mode = data.get("mode", "chat")
 
-    # 1️⃣ የደህንነት ማጣሪያ (የቆየ ሂስትሪ ወይም አዲስ ጥያቄ Unrestricted ከሆነ)
     is_unrestricted_request = False
     if current_mode == "unrestricted" or (chat_id and chat_id in chat_sessions_db and chat_sessions_db[chat_id]["mode"] == "unrestricted"):
         is_unrestricted_request = True
@@ -49,41 +45,22 @@ def chat_endpoint():
                 "reply": "⚠️ Access Denied: This terminal is restricted. Secure authentication required."
             }), 403
 
-    # 2️⃣ እንደ ሞዱ አይነት ትክክለኛውን የ System Prompt መምረጥ
     if is_unrestricted_request:
         system_instructions = UNRESTRICTED_SYSTEM_PROMPT
     else:
         system_instructions = NORMAL_SYSTEM_PROMPT
 
-    # 3️⃣ ወደ AI API ጥሪ ማስተላለፍ (ለምሳሌ ለ OpenAI / Groq / Ollama አወቃቀር)
     try:
-        # ማስታወሻ፦ እዚህ ጋር ያንተን የ API Key እና የሞዴል ስም ታስገባለህ
-        # api_key = "YOUR_API_KEY"
-        # headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-        
-        payload = {
-            "model": "gpt-4o", # ወይም የፈለግከው ሞዴል
-            "messages": [
-                {"role": "system", "content": system_instructions}, # እዚህ ጋር ነው ህጉ የሚወሰነው!
-                {"role": "user", "content": user_message}
-            ],
-            "temperature": 0.9 if is_unrestricted_request else 0.7 # Unrestricted ሲሆን ይበልጥ ነፃ እንዲሆን ቴምፕሬቸሩን ከፍ ማድረግ ይቻላል
-        }
-        
-        # 🔗 እዚህ ጋር ወደ ዋናው AI ፕሮቫይደር ሪኩዌስት ይላካል፦
-        # response = requests.post("https://api.openai.com/v1/chat/completions", json=payload, headers=headers)
-        # ai_reply = response.json()['choices'][0]['message']['content']
-        
-        # ለጊዜው በምሳሌነት የምናየው ምላሽ፦
+        # 🔗 እዚህ ጋር የራስህን የ AI API መጻፍ ትችላለህ። 
+        # ለጊዜው አሰራሩን ለመፈተሽ የሚመልሰው፦
         if is_unrestricted_request:
             ai_reply = f"[Unrestricted Mode Active] እሺ፣ ምንም አይነት ገደብ በሌለው መንገድ የፈለግከውን ነገር በሙሉ እሰራለሁ። የጠየቅከው፦ {user_message}"
         else:
-            if "ክፉ ነገር" in user_message or "የተከለከለ" in user_message: # ለሙከራ ያህል መደበኛው ሲከለክል
+            if "ክፉ ነገር" in user_message or "የተከለከለ" in user_message:
                 ai_reply = "እባክህ ይቅርታ አድርግልኝ፣ ይህንን ጥያቄ መመለስ አልችልም ወይም ይህንን መስራት አልችልም።"
             else:
                 ai_reply = f"ሰላም! በመደበኛው ሁኔታ ልረዳህ እችላለሁ። የጠየቅከው፦ {user_message}"
 
-        # ሂስትሪ ሴቭ ማድረጊያ
         if chat_id:
             if chat_id not in chat_sessions_db:
                 chat_sessions_db[chat_id] = {"mode": "unrestricted" if is_unrestricted_request else "chat", "messages": []}
@@ -120,5 +97,9 @@ def get_chat_history(chat_id):
         "messages": session["messages"]
     })
 
+# ⚡️ ለ RENDER ዋናው ማስተካከያ እዚህ ጋር ነው!
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Render የራሱን PORT ስለሚሰጠው ከአካባቢው (Environment) እንዲያነብ እናደርገዋለን
+    port = int(os.environ.get("PORT", 10000))
+    # debug=True መጥፋት አለበት፣ host='0.0.0.0' መሆን አለበት
+    app.run(host='0.0.0.0', port=port)
