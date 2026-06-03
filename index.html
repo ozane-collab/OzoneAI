@@ -3,30 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>OzoneAI</title>
+    <title>OzoneAI Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         html, body {
-            margin: 0; padding: 0; 
-            height: 100vh; height: 100dvh; /* ለስልክ ኪቦርድ ተለዋዋጭ ቁመት */
+            margin: 0;
+            padding: 0;
+            height: 100%;
             width: 100%;
-            background-color: #131314; color: #e3e3e3;
-            font-family: sans-serif; overflow: hidden; display: flex;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .main-container { display: flex; flex-direction: column; height: 100%; width: 100%; flex: 1; min-height: 0; }
-        #chat-box { 
-            display: flex !important; 
-            flex-direction: column !important; 
-            flex: 1 !important; 
-            overflow-y: auto !important; 
-            min-height: 0 !important;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
+            background-color: #131314;
+            color: #e3e3e3;
+            font-family: sans-serif;
+            overflow: hidden;
+            display: flex;
         }
         
-        /* ለስልክ ተንሸራታች ማውጫ አኒሜሽን */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+        }
+
+        #chat-box {
+            display: flex !important;
+            flex-direction: column !important;
+            flex: 1 !important;
+            overflow-y: auto !important;
+            min-height: 0 !important;
+        }
+
+        #welcome-message {
+            margin: auto !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+            width: 100% !important;
+            padding: 20px !important;
+            box-sizing: border-box !important;
+        }
+
         .sidebar-hidden { transform: translateX(-100%); opacity: 0; pointer-events: none; }
         .sidebar-visible { transform: translateX(0); opacity: 1; pointer-events: auto; }
         
@@ -42,138 +63,110 @@
             100% { content: ''; }
         }
 
-        .history-item .delete-single-btn { opacity: 0; transition: opacity 0.2s ease; }
-        .history-item:hover .delete-single-btn { opacity: 1; }
-        
         @media (max-width: 768px) {
             .sidebar-visible { width: 280px !important; }
-            .history-item .delete-single-btn { opacity: 1; }
+            #welcome-message h1 { font-size: 2.2rem !important; }
+            #welcome-message h2 { font-size: 1.1rem !important; }
         }
     </style>
 </head>
-<body class="bg-[#131314] text-[#e3e3e3] select-none relative overflow-hidden">
+<body class="bg-[#131314] text-[#e3e3e3] select-none relative">
 
-    <!-- 🔐 PASSWORD MODAL (የይለፍ ቃል መጠየቂያ ገጽ) -->
-    <div id="password-modal" class="fixed inset-0 bg-black flex items-center justify-center z-[9999]">
-        <div class="bg-[#1e1f20] p-6 rounded-2xl text-center border border-gray-800/80 max-w-[320px] w-full mx-4 shadow-2xl">
-            <div class="text-4xl mb-3">🔐</div>
-            <h2 class="text-lg font-bold mb-1 text-[#00f2fe]">OzoneAI System</h2>
-            <p class="text-[11px] text-gray-400 mb-5">Enter security code to login.</p>
-            <input type="password" id="pass-input" placeholder="••••" inputmode="numeric" pattern="[0-9]*" class="bg-[#282a2c] p-3 rounded-xl w-full mb-4 text-center border border-gray-700 outline-none focus:border-[#00f2fe] text-white tracking-widest font-mono text-lg">
-            <button onclick="checkPassword()" class="w-full bg-[#00f2fe] text-black py-3 rounded-xl font-bold hover:bg-[#00d8e4] transition active:scale-95 text-sm">Access Terminal</button>
-            <p id="pass-error" class="text-red-400 text-xs mt-3 hidden">⚠️ Access Denied! Wrong Password.</p>
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
+        <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <span class="text-base">⚡️</span>
+                <span id="sidebar-brand-text" class="text-[#00f2fe] font-semibold text-lg tracking-wide">OzoneAI Pro</span>
+            </div>
+            <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white md:hidden text-lg p-1">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 py-4 flex flex-col gap-1 px-3 overflow-y-auto">
+            <button onclick="selectMenu('chat')" id="menu-chat" class="w-full bg-[#282a2c] text-white text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left">
+                <i class="fa-regular fa-comment-dots text-[#00f2fe]"></i> Chat AI
+            </button>
+            <button onclick="selectMenu('photo')" id="menu-photo" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left">
+                <i class="fa-regular fa-image text-purple-400"></i> Photo AI (Image Gen)
+            </button>
+            <button onclick="selectMenu('video')" id="menu-video" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left mb-2">
+                <i class="fa-solid fa-clapperboard text-red-400"></i> Video Automation
+            </button>
+
+            <!-- 🔒 Hidden Secret Menu -->
+            <button onclick="promptForSecretMode()" id="menu-unrestricted" class="hidden w-full text-red-400 bg-red-950/20 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-red-900/40">
+                <i class="fa-solid fa-unlock-keyhole"></i> Admin Panel Active
+            </button>
+            
+            <div class="border-t border-gray-800/60 my-2 pt-2 flex flex-col flex-1">
+                <div class="flex justify-between items-center px-3 mb-2">
+                    <span onclick="secretTapTrigger()" class="text-[11px] text-gray-500 font-medium uppercase tracking-wider cursor-pointer select-none">Recent Chats</span>
+                    <button onclick="clearAllHistory()" class="text-gray-600 hover:text-red-400 text-xs transition cursor-pointer">
+                        <i class="fa-regular fa-trash-can"></i>
+                    </button>
+                </div>
+                <div id="chat-history-list" class="flex flex-col gap-1 overflow-y-auto max-h-[220px]"></div>
+            </div>
         </div>
     </div>
 
-    <!-- 📱 MAIN INTERFACE (ዋናው ገጽ) -->
-    <div id="main-app" class="hidden w-full h-full flex overflow-hidden">
-        
-        <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
-
-        <!-- SIDEBAR -->
-        <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
-            <div class="p-4 border-b border-gray-800/40 flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2">
-                    <span class="text-base">⚡️</span>
-                    <span class="text-[#00f2fe] font-semibold text-base tracking-wide">OzoneAI</span>
-                </div>
-                <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white md:hidden text-lg p-1">
-                    <i class="fa-solid fa-xmark"></i>
+    <!-- MAIN CHAT INTERFACE -->
+    <div class="main-container bg-[#131314] overflow-hidden relative">
+        <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg cursor-pointer transition p-2 rounded-full hover:bg-gray-800/50">
+                    <i class="fa-solid fa-bars"></i>
                 </button>
-            </div>
-
-            <div class="flex-1 py-3 flex flex-col gap-1 px-2.5 overflow-y-auto">
-                <button onclick="selectMenu('chat')" id="menu-chat" class="w-full bg-[#282a2c] text-white text-[13px] py-2.5 px-3.5 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left">
-                    <i class="fa-regular fa-comment-dots text-[#00f2fe]"></i> Chat AI
-                </button>
-                <button onclick="selectMenu('photo')" id="menu-photo" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[13px] py-2.5 px-3.5 rounded-xl transition flex items-center gap-3 cursor-pointer text-left">
-                    <i class="fa-regular fa-image text-purple-400"></i> Photo AI (Image Gen)
-                </button>
-                <button onclick="selectMenu('video')" id="menu-video" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[13px] py-2.5 px-3.5 rounded-xl transition flex items-center gap-3 cursor-pointer text-left mb-2">
-                    <i class="fa-solid fa-clapperboard text-red-400"></i> Video Automation
-                </button>
-                
-                <div class="border-t border-gray-800/60 my-2 pt-2 flex flex-col flex-1">
-                    <div class="flex justify-between items-center px-2.5 mb-2">
-                        <span class="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Recent Chats</span>
-                        <button onclick="clearAllHistory()" class="text-gray-600 hover:text-red-400 text-xs transition cursor-pointer" title="Clear All History">
-                            <i class="fa-regular fa-trash-can"></i>
-                        </button>
-                    </div>
-                    <div id="chat-history-list" class="flex flex-col gap-1 overflow-y-auto max-h-[220px]"></div>
+                <div class="text-[#00f2fe] text-sm tracking-wide flex items-center gap-1.5 font-semibold">
+                    <span>⚡️</span>
+                    <span id="top-branding-text">ozoneai_chat</span>
                 </div>
             </div>
+            <button onclick="createNewChat()" class="text-xs bg-[#1e1f20] hover:bg-[#282a2c] text-teal-400 px-3 py-1.5 rounded-full border border-gray-800 font-medium transition cursor-pointer flex items-center gap-1.5">
+                <i class="fa-solid fa-plus text-[10px]"></i> New Chat
+            </button>
         </div>
 
-        <!-- CONTENT AREA -->
-        <div class="main-container bg-[#131314] overflow-hidden relative">
-            
-            <!-- TOP BAR -->
-            <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-gray-800/20 flex-shrink-0">
-                <div class="flex items-center gap-2">
-                    <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-base cursor-pointer transition p-2 rounded-full hover:bg-gray-800/40">
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
-                    <div class="text-[#00f2fe] text-sm tracking-wide flex items-center gap-1.5 font-semibold">
-                        <span>⚡️</span>
-                        <span id="top-branding-text">ozoneai_chat</span>
-                    </div>
-                </div>
-                <button onclick="createNewChat()" class="text-[11px] bg-[#1e1f20] hover:bg-[#282a2c] text-teal-400 px-3 py-1.5 rounded-full border border-gray-800 font-medium transition cursor-pointer flex items-center gap-1">
-                    <i class="fa-solid fa-plus text-[9px]"></i> New Chat
+        <div id="chat-box" class="px-4 py-4 max-w-3xl w-full mx-auto flex-1 overflow-y-auto"></div>
+
+        <div class="p-4 bg-[#131314] flex-shrink-0 pb-safe">
+            <div class="max-w-3xl mx-auto flex items-center bg-[#1e1f20] rounded-full px-4 py-2 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg">
+                <input type="text" id="user-input" placeholder="Message OzoneAI..." class="flex-1 bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[15px] py-1.5 px-1" autocomplete="off">
+                <button id="send-btn" onclick="sendMessage()" class="text-gray-400 hover:text-[#00f2fe] w-9 h-9 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 ml-1">
+                    <i class="fa-solid fa-paper-plane text-sm"></i>
                 </button>
             </div>
+        </div>
+    </div>
 
-            <!-- CHAT BOX -->
-            <div id="chat-box" class="flex-1 overflow-y-auto px-4 py-4 space-y-5 flex flex-col max-w-2xl w-full mx-auto"></div>
-
-            <!-- INPUT CONTAINER -->
-            <div class="p-3 bg-[#131314] flex-shrink-0 pb-safe">
-                
-                <!-- FILE PREVIEW CONTAINER -->
-                <div id="media-preview" class="max-w-2xl mx-auto mb-2 hidden flex items-center gap-2 p-1.5 bg-[#1e1f20] rounded-xl w-fit border border-gray-800 animate-fade-in"></div>
-
-                <div class="max-w-2xl mx-auto flex items-center bg-[#1e1f20] rounded-full pl-2 pr-1.5 py-1 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/50 shadow-md">
-                    
-                    <!-- 📷 MEDIA UPLOAD BUTTON (+) -->
-                    <button onclick="triggerMediaUpload()" class="text-gray-400 hover:text-[#00f2fe] p-2 rounded-full hover:bg-gray-800/40 transition cursor-pointer flex items-center justify-center flex-shrink-0" title="Attach Photo/Video">
-                        <i class="fa-solid fa-circle-plus text-lg"></i>
-                    </button>
-                    <input type="file" id="media-input" accept="image/*,video/*" class="hidden" onchange="handleMediaSelect(event)">
-
-                    <input type="text" id="user-input" placeholder="Message OzoneAI..." class="flex-1 bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#757577] text-[14px] py-2 px-2 min-w-0" autocomplete="off">
-                    
-                    <button id="send-btn" onclick="sendMessage()" class="text-gray-400 hover:text-[#00f2fe] w-8 h-8 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
-                        <i class="fa-solid fa-paper-plane text-xs"></i>
-                    </button>
-                </div>
-                <div class="text-center text-[9px] text-gray-500 mt-1.5 px-4">OzoneAI may display inaccurate info, so double-check its responses.</div>
+    <!-- PASSWORD MODAL POPUP -->
+    <div id="password-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+        <div class="bg-[#1e1f20] border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
+            <div class="w-12 h-12 bg-red-950/30 border border-red-900/40 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3 class="text-white font-semibold text-lg mb-1">System Override</h3>
+            <p class="text-gray-400 text-xs mb-4">Enter developer key to unlock unrestricted terminal.</p>
+            <input type="password" id="secret-password-input" placeholder="••••••••" class="w-full bg-[#131314] border border-gray-800 rounded-xl px-4 py-3 text-center text-white text-lg tracking-widest outline-none focus:border-red-500/50 mb-4">
+            <div class="flex gap-2">
+                <button onclick="closePasswordModal()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm py-2.5 rounded-xl transition cursor-pointer">Cancel</button>
+                <button onclick="verifySecretPassword()" class="flex-1 bg-red-600 hover:bg-red-500 text-white text-sm py-2.5 rounded-xl font-medium transition cursor-pointer">Unlock</button>
             </div>
         </div>
-
     </div>
 
     <script>
-        var RENDER_BASE_URL = "https://ozoneai.onrender.com";
-        var currentChatId = null;
-        var currentMode = 'chat';
-        var selectedMediaBase64 = null;
-        var selectedMediaType = null;
+        // ✅ HTTPS ስህተቱ እዚህ ጋ በትክክል ተስተካክሏል!
+        var RENDER_BASE_URL = "https://ozoneai.onrender.com"; 
 
-        function checkPassword() {
-            var inputVal = document.getElementById("pass-input").value;
-            var errorMsg = document.getElementById("pass-error");
-            
-            if (inputVal === "1234") { 
-                document.getElementById("password-modal").style.display = "none";
-                document.getElementById("main-app").classList.remove("hidden");
-                errorMsg.classList.add("hidden");
-                fetch(RENDER_BASE_URL + "/").catch(function(e){});
-            } else {
-                errorMsg.classList.remove("hidden");
-                document.getElementById("pass-input").value = "";
-            }
-        }
+        var currentChatId = null;
+        var currentMode = 'chat'; 
+        var inputAuthToken = ""; 
+        var secretTapCount = 0;
 
         window.onload = function() {
             var inputElement = document.getElementById("user-input");
@@ -184,35 +177,38 @@
                         sendMessage();
                     }
                 };
-                
-                // 📱 ኪቦርዱ ስልክ ላይ ሲነሳ ቻቱን ወደ ታች በራሱ ዝቅ የሚያደርግ አዲስ ፈንክሽን
-                inputElement.addEventListener('focus', function() {
+            }
+
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', function() {
+                    document.body.style.height = window.visualViewport.height + 'px';
                     setTimeout(function() {
                         var chatBox = document.getElementById("chat-box");
-                        chatBox.scrollTop = chatBox.scrollHeight;
-                    }, 300);
+                        if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+                    }, 100);
                 });
             }
-            
-            document.getElementById("pass-input").onkeydown = function(e) {
-                if(e.key === "Enter") checkPassword();
-            };
 
             loadChatHistory();
             showWelcomeMessage();
             setupResponsiveSidebar();
         };
 
-        window.onresize = function() { 
+        window.onresize = function() {
             setupResponsiveSidebar();
-            // ስክሪኑ መጠን ሲቀይር (ኪቦርድ ሲወጣ) ቻቱን እታች ያቆየዋል
-            var chatBox = document.getElementById("chat-box");
-            if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
         };
+
+        function secretTapTrigger() {
+            secretTapCount++;
+            if (secretTapCount >= 3) {
+                secretTapCount = 0;
+                promptForSecretMode();
+            }
+        }
 
         function setupResponsiveSidebar() {
             var sidebar = document.getElementById("sidebar");
-            if(!sidebar) return;
+            if (!sidebar) return;
             if(window.innerWidth > 768) {
                 sidebar.classList.remove("sidebar-hidden");
                 sidebar.classList.add("sidebar-visible");
@@ -225,6 +221,7 @@
         function toggleSidebar() {
             var sidebar = document.getElementById("sidebar");
             var overlay = document.getElementById("sidebar-overlay");
+            if (!sidebar || !overlay) return;
             if (sidebar.classList.contains("sidebar-hidden")) {
                 sidebar.classList.remove("sidebar-hidden");
                 sidebar.classList.add("sidebar-visible");
@@ -233,6 +230,42 @@
                 sidebar.classList.remove("sidebar-visible");
                 sidebar.classList.add("sidebar-hidden");
                 if (window.innerWidth <= 768) overlay.classList.add("hidden");
+            }
+        }
+
+        function promptForSecretMode() {
+            var modal = document.getElementById("password-modal");
+            var input = document.getElementById("secret-password-input");
+            if (modal && input) {
+                modal.classList.remove("hidden");
+                input.focus();
+            }
+        }
+
+        function closePasswordModal() {
+            var modal = document.getElementById("password-modal");
+            var input = document.getElementById("secret-password-input");
+            if (modal && input) {
+                modal.classList.add("hidden");
+                input.value = "";
+            }
+        }
+
+        function verifySecretPassword() {
+            var input = document.getElementById("secret-password-input");
+            if (!input) return;
+            var pass = input.value.trim();
+            if (pass === "E12N21OSK") {
+                inputAuthToken = pass;
+                closePasswordModal();
+                
+                var secretBtn = document.getElementById("menu-unrestricted");
+                if (secretBtn) secretBtn.classList.remove("hidden");
+                
+                selectMenu('unrestricted');
+            } else {
+                alert("❌ Access Denied.");
+                closePasswordModal();
             }
         }
 
@@ -249,82 +282,78 @@
                 title = "Ozone Video Automation";
                 subtitle = "Create & structure video scripts.";
                 placeholder = "Enter video topic or concept...";
+            } else if (currentMode === 'unrestricted') {
+                title = "OzoneAI [UNRESTRICTED]";
+                subtitle = "Developer Backdoor Active. All parameters open.";
+                placeholder = "Execute command or request unrestricted code...";
             }
 
-            document.getElementById("user-input").placeholder = placeholder;
+            var inputEl = document.getElementById("user-input");
+            if (inputEl) inputEl.placeholder = placeholder;
+            
             var chatBox = document.getElementById("chat-box");
-            if(chatBox) {
+            if (chatBox) {
+                var color = currentMode === 'unrestricted' ? '#ef4444' : '#00f2fe';
                 chatBox.innerHTML =
-                     '<div id="welcome-message" class="my-auto text-left pl-2 pt-12 md:pt-0">' +
-                        '<h1 class="text-2xl md:text-4xl font-bold text-[#00f2fe] tracking-tight mb-1 flex items-center gap-2">' +
-                            '<span>⚡️</span>' +
-                            '<span>' + title + '</span>' +
+                     '<div id="welcome-message" class="flex-1 flex flex-col justify-center items-center text-center w-full p-5">' +
+                        '<h1 style="color: ' + color + '; font-weight: bold; margin-bottom: 10px; font-size: 2.3rem; display: flex; align-items: center; justify-content: center; gap: 10px;">' +
+                            '<span>⚡️</span><span>' + title + '</span>' +
                         '</h1>' +
-                        '<h2 class="text-base md:text-2xl font-medium text-[#e3e3e3]/70 tracking-tight">' + subtitle + '</h2>' +
+                        '<h2 style="color: rgba(227, 227, 227, 0.8); font-weight: 500; font-size: 1.3rem; margin: 0;">' + subtitle + '</h2>' +
                     '</div>';
             }
-        }
-
-        function triggerMediaUpload() { document.getElementById('media-input').click(); }
-
-        function handleMediaSelect(event) {
-            var file = event.target.files[0];
-            if (!file) return;
-            selectedMediaType = file.type;
-
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                selectedMediaBase64 = e.target.result;
-                var previewContainer = document.getElementById('media-preview');
-                previewContainer.classList.remove('hidden');
-                
-                if (file.type.startsWith('image/')) {
-                    previewContainer.innerHTML = '<div class="relative"><img src="'+selectedMediaBase64+'" class="h-12 w-12 object-cover rounded-lg border border-gray-700"><button onclick="clearMediaSelection()" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full text-[9px] w-4 h-4 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button></div>';
-                } else if (file.type.startsWith('video/')) {
-                    previewContainer.innerHTML = '<div class="relative"><div class="h-12 w-12 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700"><i class="fa-solid fa-video text-xs text-gray-400"></i></div><button onclick="clearMediaSelection()" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full text-[9px] w-4 h-4 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button></div>';
-                }
-                var chatBox = document.getElementById("chat-box");
-                chatBox.scrollTop = chatBox.scrollHeight;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function clearMediaSelection() {
-            selectedMediaBase64 = null;
-            selectedMediaType = null;
-            document.getElementById('media-input').value = "";
-            document.getElementById('media-preview').classList.add('hidden');
-            document.getElementById('media-preview').innerHTML = "";
         }
 
         function createNewChat() {
             currentChatId = null;
             showWelcomeMessage();
             loadChatHistory();
-            clearMediaSelection();
             if(window.innerWidth <= 768) {
                 var sidebar = document.getElementById("sidebar");
                 var overlay = document.getElementById("sidebar-overlay");
-                sidebar.classList.remove("sidebar-visible");
-                sidebar.classList.add("sidebar-hidden");
-                overlay.classList.add("hidden");
+                if (sidebar && overlay) {
+                    sidebar.classList.remove("sidebar-visible");
+                    sidebar.classList.add("sidebar-hidden");
+                    overlay.classList.add("hidden");
+                }
             }
         }
 
         function selectMenu(menuType) {
+            var brandText = document.getElementById("sidebar-brand-text");
+            if (menuType !== 'unrestricted') {
+                inputAuthToken = ""; 
+                if (brandText) {
+                    brandText.innerText = "OzoneAI Pro";
+                    brandText.className = "text-[#00f2fe] font-semibold text-lg tracking-wide";
+                }
+                var secretBtn = document.getElementById("menu-unrestricted");
+                if (secretBtn) secretBtn.classList.add("hidden");
+            } else {
+                if (brandText) {
+                    brandText.innerText = "OzoneAI [⚡️]";
+                    brandText.className = "text-red-500 font-bold text-lg tracking-wide animate-pulse";
+                }
+            }
+
             currentMode = menuType;
-            var menus = ['chat', 'photo', 'video'];
+            var menus = ['chat', 'photo', 'video', 'unrestricted'];
             menus.forEach(function(m) {
                 var el = document.getElementById('menu-' + m);
                 if (el) {
                     if (m === menuType) {
-                        el.className = "w-full bg-[#282a2c] text-white text-[13px] py-2.5 px-3.5 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left";
+                        el.className = m === 'unrestricted' ? 
+                            "w-full bg-red-950/40 text-red-400 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left border border-red-900/50" :
+                            "w-full bg-[#282a2c] text-white text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left";
                     } else {
-                        el.className = "w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[13px] py-2.5 px-3.5 rounded-xl transition flex items-center gap-3 cursor-pointer text-left";
+                        el.className = m === 'unrestricted' ?
+                            "w-full text-red-400 bg-red-950/20 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-red-900/40" :
+                            "w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left";
                     }
                 }
             });
-            document.getElementById("top-branding-text").innerText = "ozoneai_" + menuType;
+            var topText = document.getElementById("top-branding-text");
+            if (topText) topText.innerText = "ozoneai_" + menuType;
             createNewChat();
         }
 
@@ -358,7 +387,7 @@
 
         function loadChatHistory() {
             var historyList = document.getElementById("chat-history-list");
-            if(!historyList) return;
+            if (!historyList) return;
             var savedChats = localStorage.getItem("ozone_sessions");
             historyList.innerHTML = "";
             
@@ -374,14 +403,14 @@
                         var isActive = session.id === currentChatId ? "bg-[#282a2c]/60 text-white" : "text-gray-400";
                         
                         var item = document.createElement("div");
-                        item.className = "history-item " + isActive + " hover:text-white hover:bg-[#282a2c]/40 text-[12px] py-2 px-2.5 rounded-lg cursor-pointer transition flex items-center justify-between group truncate";
+                        item.className = "history-item " + isActive + " hover:text-white hover:bg-[#282a2c]/40 text-[13px] py-2 px-3 rounded-lg cursor-pointer transition flex items-center justify-between group truncate";
                         item.setAttribute("onclick", "openChatSession('" + session.id + "')");
                         item.innerHTML =
                               '<div class="flex items-center gap-2 truncate flex-1">' +
                                 '<i class="fa-regular fa-message text-xs text-gray-500"></i>' +
                                 '<span class="truncate">' + displayTitle + '</span>' +
                             '</div>' +
-                            '<button onclick="deleteSingleHistory(\'' + session.id + '\', event)" class="delete-single-btn text-gray-500 hover:text-red-400 p-1 rounded transition ml-1" title="Delete chat">' +
+                            '<button onclick="deleteSingleHistory(\'' + session.id + '\', event)" class="delete-single-btn text-gray-500 hover:text-red-400 p-1 rounded transition ml-1">' +
                                 '<i class="fa-solid fa-xmark text-xs"></i>' +
                             '</button>';
                         
@@ -404,33 +433,36 @@
             if (activeSession) {
                 currentMode = activeSession.mode;
                 var chatBox = document.getElementById("chat-box");
+                if (!chatBox) return;
                 chatBox.innerHTML = "";
                 
                 activeSession.messages.forEach(function(msg) {
                     if (msg.role === "user") {
                         chatBox.innerHTML += 
-                            '<div class="flex justify-end w-full">' +
-                                '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2 text-[14px] max-w-[85%] break-words shadow-sm">' + msg.text + '</div>' +
+                            '<div style="display: flex; justify-content: flex-end; width: 100%; padding: 4px 0;">' +
+                                '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + msg.text + '</div>' +
                             '</div>';
                     } else {
-                        var imgHtml = msg.image ? '<img src="' + msg.image + '" class="mt-2 rounded-xl max-w-xs w-full border border-gray-800 shadow-md" />' : '';
+                        var imgHtml = msg.image ? '<img src="' + msg.image + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-md" />' : '';
                         chatBox.innerHTML += 
-                            '<div class="flex justify-start w-full pl-1">' +
-                                '<div class="text-[#e3e3e3] text-[14px] max-w-full leading-relaxed break-words whitespace-pre-line">' + 
+                            '<div style="display: flex; justify-content: flex-start; width: 100%; padding: 4px 0; padding-left: 4px;">' +
+                                '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + 
                                     msg.text + imgHtml +
                                 '</div>' +
                             '</div>';
                     }
                 });
-                setTimeout(function() { chatBox.scrollTop = chatBox.scrollHeight; }, 50);
+                chatBox.scrollTop = chatBox.scrollHeight;
                 loadChatHistory();
                 
                 if(window.innerWidth <= 768) {
                     var sidebar = document.getElementById("sidebar");
                     var overlay = document.getElementById("sidebar-overlay");
-                    sidebar.classList.remove("sidebar-visible");
-                    sidebar.classList.add("sidebar-hidden");
-                    overlay.classList.add("hidden");
+                    if (sidebar && overlay) {
+                        sidebar.classList.remove("sidebar-visible");
+                        sidebar.classList.add("sidebar-hidden");
+                        overlay.classList.add("hidden");
+                    }
                 }
             }
         }
@@ -457,30 +489,27 @@
         function sendMessage() {
             var inputField = document.getElementById("user-input");
             var chatBox = document.getElementById("chat-box");
+            if (!inputField || !chatBox) return;
             var message = inputField.value.trim();
 
-            if (message === "" && !selectedMediaBase64) return;
+            if (message === "") return;
 
             var welcome = document.getElementById("welcome-message");
             if (welcome) welcome.remove();
             
-            var userDisplayHTML = '<div class="flex justify-end w-full"><div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2 text-[14px] max-w-[85%] break-words shadow-sm">';
-            if (selectedMediaBase64 && selectedMediaType.startsWith('image/')) {
-                userDisplayHTML += '<img src="'+selectedMediaBase64+'" class="max-w-xs max-h-40 rounded-lg mb-2 border border-gray-700 shadow-sm">';
-            } else if (selectedMediaBase64 && selectedMediaType.startsWith('video/')) {
-                userDisplayHTML += '<div class="text-teal-400 text-xs mb-1"><i class="fa-solid fa-video"></i> Video Attached</div>';
-            }
-            userDisplayHTML += message + '</div></div>';
+            chatBox.innerHTML +=
+                  '<div style="display: flex; justify-content: flex-end; width: 100%; padding: 4px 0;">' +
+                    '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + message + '</div>' +
+                '</div>';
             
-            chatBox.innerHTML += userDisplayHTML;
-            saveMessageToHistory("user", message || "[Attachment]");
+            saveMessageToHistory("user", message);
             inputField.value = "";
             chatBox.scrollTop = chatBox.scrollHeight;
 
             var loadingId = "loading-" + Date.now();
             chatBox.innerHTML += 
-                '<div id="' + loadingId + '" class="flex justify-start w-full pl-1 animate-pulse">' +
-                    '<div class="text-gray-400 text-lg font-bold tracking-widest thinking-dots"></div>' +
+                '<div id="' + loadingId + '" class="flex justify-start w-full pl-1 animate-pulse py-2">' +
+                    '<div class="text-gray-400 text-xl font-bold tracking-widest thinking-dots"></div>' +
                 '</div>';
             chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -488,14 +517,6 @@
             if (currentMode === 'photo') endpoint = RENDER_BASE_URL + "/photo";
             if (currentMode === 'video') endpoint = RENDER_BASE_URL + "/video";
             
-            var payload = { message: message };
-            if (selectedMediaBase64) {
-                payload.media = selectedMediaBase64;
-                payload.media_type = selectedMediaType;
-            }
-
-            clearMediaSelection();
-
             var xhr = new XMLHttpRequest();
             xhr.open("POST", endpoint, true);
             xhr.setRequestHeader("Content-Type", "application/json");
@@ -507,25 +528,29 @@
 
                     if (xhr.status === 200) {
                         var data = JSON.parse(xhr.responseText);
-                        var imgHtml = data.image ? '<img src="' + data.image + '" class="mt-2 rounded-xl max-w-xs w-full border border-gray-800 shadow-lg" />' : '';
+                        var imgHtml = data.image ? '<img src="' + data.image + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-lg" />' : '';
                         
                         chatBox.innerHTML += 
-                            '<div class="flex justify-start w-full pl-1">' +
-                                '<div class="text-[#e3e3e3] text-[14px] max-w-full leading-relaxed break-words whitespace-pre-line">' + 
+                            '<div style="display: flex; justify-content: flex-start; width: 100%; padding: 4px 0; padding-left: 4px;">' +
+                                '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + 
                                     data.reply + imgHtml +
                                 '</div>' +
                             '</div>';
                         saveMessageToHistory("ai", data.reply, data.image);
                     } else {
                         chatBox.innerHTML += 
-                            '<div class="flex justify-start w-full pl-1">' +
-                                '<div class="bg-red-950/20 text-red-400/90 text-xs rounded-xl px-4 py-2 border border-red-900/30">⚠️ Connection failed. Check server.</div>' +
+                            '<div class="flex justify-start w-full pl-1 py-1">' +
+                                '<div class="bg-red-950/20 text-red-400/90 text-xs rounded-xl px-4 py-2 border border-red-900/30">⚠️ Connection failed.</div>' +
                             '</div>';
                     }
                     chatBox.scrollTop = chatBox.scrollHeight;
                 }
             };
-            xhr.send(JSON.stringify(payload));
+            
+            xhr.send(JSON.stringify({ 
+                message: message,
+                password: inputAuthToken 
+            }));
         }
     </script>
 </body>
