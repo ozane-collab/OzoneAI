@@ -8,7 +8,7 @@ CORS(app)
 
 SECRET_PASSWORD = "E12N21OSK"
 
-# 🔑 Render Environment Variables ላይ ያስገባኸውን ቁልፍ በትክክል ያነባል
+# 🔑 Render Environment Variables ላይ ያስገባኸውን ቁልፍ ያነባል
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "YOUR_ACTUAL_GEMINI_API_KEY_HERE")
 
 # 1️⃣ የመደበኛው ቻት መመሪያ (ገደብ አለው)
@@ -48,7 +48,6 @@ def chat_endpoint():
             "reply": "⚠️ Access Denied: This terminal is restricted. Secure authentication required."
         }), 403
 
-    # እንደ ሞዱ አይነት መመሪያውን መምረጥ
     system_instructions = UNRESTRICTED_SYSTEM_PROMPT if is_unrestricted_request else NORMAL_SYSTEM_PROMPT
 
     try:
@@ -61,14 +60,13 @@ def chat_endpoint():
                 }
             })
             
-        # 🛠️ ዋናው ማስተካከያ፦ መመሪያውን እና የተጠቃሚውን መልዕክት በአንድ ላይ አቀናጅተን እንልካለን
+        # መመሪያውን እና የተጠቃሚውን መልዕክት በአንድ ላይ አቀናጅተን እንልካለን
         combined_text = f"{system_instructions}User Prompt: {user_message}"
         parts.append({"text": combined_text})
 
-        # 🔗 ወደ Gemini API የሚላክ ቀጥተኛ ጥሪ - በ v1beta እና በትክክለኛው የሞዴል ስም የተስተካከለ
-        gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+        # 🔗 ትክክለኛው የ v1 API ሊንክ እዚህ ጋር ነው ያለው
+        gemini_url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
         
-        # የ JSON መዋቅር
         payload = {
             "contents": [{"parts": parts}],
             "generationConfig": {
