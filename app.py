@@ -51,13 +51,26 @@ def chat_endpoint():
     system_instructions = UNRESTRICTED_SYSTEM_PROMPT if is_unrestricted_request else NORMAL_SYSTEM_PROMPT
 
     try:
-        # 🛠️ ማስተካከያ፦ Google v1beta ላይ የሚፈልገው ትክክለኛው የ payload አወቃቀር ይህ ነው
-        # systemInstruction ውጭ ላይ ይወጣል፣ contents ውስጥ ደግሞ የተጠቃሚው መልዕክት ብቻ ይገባል
+        user_parts = []
+        if file_data and "data" in file_data and "mime_type" in file_data:
+            user_parts.append({
+                "inline_data": {
+                    "mime_type": file_data["mime_type"],
+                    "data": file_data["data"]
+                }
+            })
+            
+        user_parts.append({"text": user_message})
+
+        # 🛠️ ማስተካከያ 1 እና 2፦ ስሪቱን ወደ v1፣ የሞዴል ስሙን ደግሞ ወደ gemini-1.5-flash-latest ቀይረነዋል
+        gemini_url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key={GEMINI_API_KEY}"
+        
+        # 🛠️ ማስተካከያ 3፦ በ v1 ሥሪት መሠረት systemInstruction እና contents መዋቅር በትክክል ተቀምጧል
         payload = {
             "contents": [
                 {
                     "role": "user",
-                    "parts": []
+                    "parts": user_parts
                 }
             ],
             "systemInstruction": {
@@ -69,21 +82,6 @@ def chat_endpoint():
                 "temperature": 0.9 if is_unrestricted_request else 0.4
             }
         }
-
-        # ፎቶ ወይም ፋይል ካለ እንጨምራለን
-        if file_data and "data" in file_data and "mime_type" in file_data:
-            payload["contents"][0]["parts"].append({
-                "inline_data": {
-                    "mime_type": file_data["mime_type"],
-                    "data": file_data["data"]
-                }
-            })
-            
-        # የተጠቃሚውን ጽሑፍ እንጨምራለን
-        payload["contents"][0]["parts"].append({"text": user_message})
-
-        # 🔗 የ Google Gemini v1beta Endpoint ሊንክ
-        gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
 
         response = requests.post(gemini_url, json=payload, headers={"Content-Type": "application/json"})
         response_data = response.json()
