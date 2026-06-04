@@ -7,16 +7,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 🔥 የሞባይል ስክሪን ኪቦርድ ሲመጣ ሙሉ በሙሉ እንዳይበላሽ የሚቆልፍ አዲሱ የ CSS መዋቅር */
+        /* 🔥 ፍጹም የሆነ የሞባይል ስክሪን አቀማመጥ (Premium Mobile UI/UX) */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100vh;
-            height: 100dvh; /* የሞባይል ኪቦርድን መጠን በራሱ የሚለካ */
+            height: 100dvh;
             background-color: #131314;
             color: #e3e3e3;
-            font-family: sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             overflow: hidden;
             overscroll-behavior: none;
         }
@@ -31,8 +31,8 @@
         }
         
         .main-container {
-            display: grid;
-            grid-template-rows: auto 1fr auto; 
+            display: flex;
+            flex-direction: column;
             height: 100vh;
             height: 100dvh;
             min-height: 0;
@@ -40,23 +40,27 @@
             background-color: #131314;
         }
 
-        #chat-box {
-            overflow-y: auto !important;
-            display: flex !important;
-            flex-direction: column !important;
-            min-height: 0 !important;
-            height: 100% !important;
+        /* 🛠️ የአቀማመጥ ማስተካከያ፡ መልዕክቶች ልክ እንደ ChatGPT ከታች ወደ ላይ በሥርዓት እንዲደደሩ */
+        .chat-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
             -webkit-overflow-scrolling: touch;
         }
 
-        #welcome-message {
-            margin: auto !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: center !important;
-            align-items: center !important;
-            text-align: center !important;
-            padding: 20px !important;
+        .welcome-wrapper {
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+            max-width: 450px;
         }
 
         .sidebar-hidden { transform: translateX(-100%); opacity: 0; pointer-events: none; }
@@ -75,12 +79,8 @@
         }
 
         @media (max-width: 768px) {
-            .app-layout {
-                grid-template-columns: 1fr;
-            }
+            .app-layout { grid-template-columns: 1fr; }
             .sidebar-visible { width: 280px !important; }
-            #welcome-message h1 { font-size: 2.0rem !important; }
-            #welcome-message h2 { font-size: 1.0rem !important; }
         }
     </style>
 </head>
@@ -132,7 +132,7 @@
         <!-- Main Content Area -->
         <div class="main-container">
             <!-- Top Header -->
-            <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20">
+            <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0">
                 <div class="flex items-center gap-3">
                     <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg cursor-pointer transition p-2 rounded-full hover:bg-gray-800/50">
                         <i class="fa-solid fa-bars"></i>
@@ -147,11 +147,11 @@
                 </button>
             </div>
 
-            <!-- Chat Space -->
-            <div id="chat-box" class="px-4 py-4 max-w-3xl w-full mx-auto"></div>
+            <!-- Chat Space (🛠️ ፍጹም የተስተካከለ ስክሮል አቀማመጥ) -->
+            <div id="chat-box" class="chat-scroll-area max-w-3xl w-full mx-auto"></div>
 
             <!-- Image Preview Area -->
-            <div id="image-preview-container" class="hidden max-w-3xl w-full mx-auto px-4 mb-2">
+            <div id="image-preview-container" class="hidden max-w-3xl w-full mx-auto px-4 mb-2 flex-shrink-0">
                 <div class="relative inline-block bg-[#1e1f20] p-2 rounded-xl border border-gray-800">
                     <img id="image-preview" src="" class="h-20 w-20 object-cover rounded-lg">
                     <button onclick="clearSelectedImage()" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-500 shadow-lg">
@@ -160,20 +160,29 @@
                 </div>
             </div>
 
-            <!-- Input Form Field (🛠️ ቁመቱ ከፍ እንዲል እና በሞባይል እንዳይበላሽ የተስተካከለ) -->
-            <div class="p-4 bg-[#131314] pb-safe">
-                <div class="max-w-3xl mx-auto flex items-center bg-[#1e1f20] rounded-[24px] px-4 py-3 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg gap-2">
+            <!-- Bottom Control Block (🛠️ የቋንቋ መቀያየሪያ ቁልፎች እና የመጻፊያ ሳጥን) -->
+            <div class="p-4 bg-[#131314] flex-shrink-0">
+                <div class="max-w-3xl mx-auto flex flex-col gap-2">
                     
-                    <button onclick="triggerImageUpload()" class="text-gray-400 hover:text-teal-400 w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
-                        <i class="fa-solid fa-plus text-lg"></i>
-                    </button>
-                    <input type="file" id="image-input" accept="image/*" class="hidden" onchange="previewImage(event)">
+                    <!-- 🛠️ አዲስ የቋንቋ መምረጫ ቁልፎች (Language Switcher) -->
+                    <div class="flex justify-end gap-1.5 px-1">
+                        <button id="lang-en" onclick="setLanguage('en')" class="text-[11px] font-bold bg-[#00f2fe] text-black px-2.5 py-1 rounded-md transition duration-150">EN</button>
+                        <button id="lang-am" onclick="setLanguage('am')" class="text-[11px] font-bold bg-[#282a2c] text-gray-400 px-2.5 py-1 rounded-md transition duration-150">አማ</button>
+                    </div>
 
-                    <input type="text" id="user-input" placeholder="Message OzoneAI..." class="flex-1 bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[16px] py-1 px-1 min-w-0" autocomplete="off">
-                    
-                    <button id="send-btn" onclick="sendMessage()" class="text-gray-400 hover:text-[#00f2fe] w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
-                        <i class="fa-solid fa-paper-plane text-base"></i>
-                    </button>
+                    <!-- Input Form -->
+                    <div class="flex items-center bg-[#1e1f20] rounded-[24px] px-4 py-3.5 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg gap-2">
+                        <button onclick="triggerImageUpload()" class="text-gray-400 hover:text-teal-400 w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
+                            <i class="fa-solid fa-plus text-lg"></i>
+                        </button>
+                        <input type="file" id="image-input" accept="image/*" class="hidden" onchange="previewImage(event)">
+
+                        <input type="text" id="user-input" placeholder="Message OzoneAI..." class="flex-1 bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[16px] py-1 px-1 min-w-0" autocomplete="off">
+                        
+                        <button id="send-btn" onclick="sendMessage()" class="text-gray-400 hover:text-[#00f2fe] w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
+                            <i class="fa-solid fa-paper-plane text-base"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -204,6 +213,7 @@
         var secretTapCount = 0;
         var isAdminUnlocked = false; 
         var selectedImageBase64 = null;
+        var selectedLanguage = "en"; // ነባሪ ቋንቋ እንግሊዝኛ ነው
 
         window.onload = function() {
             var inputElement = document.getElementById("user-input");
@@ -222,12 +232,25 @@
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', function() {
                     var chatBox = document.getElementById("chat-box");
-                    if (chatBox) {
-                        setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
-                    }
+                    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
                 });
             }
         };
+
+        function setLanguage(lang) {
+            selectedLanguage = lang;
+            var enBtn = document.getElementById("lang-en");
+            var amBtn = document.getElementById("lang-am");
+            
+            if (lang === 'am') {
+                amBtn.className = "text-[11px] font-bold bg-[#00f2fe] text-black px-2.5 py-1 rounded-md transition duration-150";
+                enBtn.className = "text-[11px] font-bold bg-[#282a2c] text-gray-400 px-2.5 py-1 rounded-md transition duration-150";
+            } else {
+                enBtn.className = "text-[11px] font-bold bg-[#00f2fe] text-black px-2.5 py-1 rounded-md transition duration-150";
+                amBtn.className = "text-[11px] font-bold bg-[#282a2c] text-gray-400 px-2.5 py-1 rounded-md transition duration-150";
+            }
+            showWelcomeMessage();
+        }
 
         function triggerImageUpload() {
             document.getElementById("image-input").click();
@@ -236,13 +259,11 @@
         function previewImage(event) {
             var file = event.target.files[0];
             if (!file) return;
-            
             var reader = new FileReader();
             reader.onload = function(e) {
                 selectedImageBase64 = e.target.result;
                 document.getElementById("image-preview").src = selectedImageBase64;
                 document.getElementById("image-preview-container").classList.remove("hidden");
-                
                 var chatBox = document.getElementById("chat-box");
                 if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
             };
@@ -322,12 +343,10 @@
                 inputAuthToken = pass;
                 isAdminUnlocked = true; 
                 closePasswordModal();
-                
                 var lockIcon = document.getElementById("lock-icon");
                 var adminText = document.getElementById("admin-text");
                 if (lockIcon) lockIcon.className = "fa-solid fa-lock-open text-green-400";
                 if (adminText) adminText.innerText = "Admin Panel Active";
-                
                 selectMenu('unrestricted');
             } else {
                 alert("❌ Access Denied.");
@@ -337,21 +356,21 @@
 
         function showWelcomeMessage() {
             var title = "OzoneAI";
-            var subtitle = "How can I help you today?";
-            var placeholder = "Message OzoneAI...";
+            var subtitle = (selectedLanguage === "am") ? "ዛሬ በምን ልርዳህ?" : "How can I help you today?";
+            var placeholder = (selectedLanguage === "am") ? "ለኦዞን መልዕክት ይጻፉ..." : "Message OzoneAI...";
 
             if (currentMode === 'photo') {
                 title = "Ozone Photo AI";
-                subtitle = "Generate & edit stunning images.";
-                placeholder = "Describe the image you want to generate...";
+                subtitle = (selectedLanguage === "am") ? "ድንቅ ምስሎችን እዚህ ይፍጠሩ።" : "Generate & edit stunning images.";
+                placeholder = (selectedLanguage === "am") ? "ሊሰሩት የሚፈልጉትን ፎቶ ይግለጹ..." : "Describe the image you want to generate...";
             } else if (currentMode === 'video') {
                 title = "Ozone Video Automation";
                 subtitle = "Create & structure video scripts.";
                 placeholder = "Enter video topic or concept...";
             } else if (currentMode === 'unrestricted') {
                 title = "OzoneAI [UNRESTRICTED]";
-                subtitle = "Developer Backdoor Active. All parameters open.";
-                placeholder = "Execute command or request unrestricted code...";
+                subtitle = "Developer Backdoor Active.";
+                placeholder = "Execute command...";
             }
 
             var inputEl = document.getElementById("user-input");
@@ -361,11 +380,11 @@
             if (chatBox) {
                 var color = currentMode === 'unrestricted' ? '#ef4444' : '#00f2fe';
                 chatBox.innerHTML =
-                     '<div id="welcome-message">' +
-                        '<h1 style="color: ' + color + '; font-weight: bold; margin-bottom: 10px; font-size: 2.3rem; display: flex; align-items: center; justify-content: center; gap: 10px;">' +
+                     '<div id="welcome-message" class="welcome-wrapper">' +
+                        '<h1 style="color: ' + color + '; font-weight: bold; margin-bottom: 10px; font-size: 2.2rem; display: flex; align-items: center; justify-content: center; gap: 10px;">' +
                             '<span>⚡️</span><span>' + title + '</span>' +
                         '</h1>' +
-                        '<h2 style="color: rgba(227, 227, 227, 0.8); font-weight: 500; font-size: 1.1rem; margin: 0;">' + subtitle + '</h2>' +
+                        '<h2 style="color: rgba(227, 227, 227, 0.75); font-weight: 500; font-size: 1.05rem; margin: 0; letter-spacing: 0.3px;">' + subtitle + '</h2>' +
                     '</div>';
             }
         }
@@ -387,54 +406,27 @@
         }
 
         function selectMenu(menuType) {
-            var brandText = document.getElementById("sidebar-brand-text");
-            
-            if (menuType !== 'unrestricted') {
-                inputAuthToken = ""; 
-                isAdminUnlocked = false; 
-                if (brandText) {
-                    brandText.innerText = "OzoneAI Pro";
-                    brandText.className = "text-[#00f2fe] font-semibold text-lg tracking-wide";
-                }
-                var secretBtn = document.getElementById("menu-unrestricted");
-                if (secretBtn) secretBtn.classList.add("hidden");
-                
-                var lockIcon = document.getElementById("lock-icon");
-                var adminText = document.getElementById("admin-text");
-                if (lockIcon) lockIcon.className = "fa-solid fa-lock text-red-500";
-                if (adminText) adminText.innerText = "Admin Panel Inactive";
-            } else {
-                if (brandText) {
-                    brandText.innerText = "OzoneAI [⚡️]";
-                    brandText.className = "text-red-500 font-bold text-lg tracking-wide animate-pulse";
-                }
-            }
-
             currentMode = menuType;
+            var topText = document.getElementById("top-branding-text");
+            if (topText) topText.innerText = "ozoneai_" + menuType;
+            
             var menus = ['chat', 'photo', 'video', 'unrestricted'];
             menus.forEach(function(m) {
                 var el = document.getElementById('menu-' + m);
                 if (el) {
                     if (m === menuType) {
-                        el.className = m === 'unrestricted' ? 
-                            "w-full bg-red-950/40 text-red-400 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left border border-red-900/50" :
-                            "w-full bg-[#282a2c] text-white text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left";
+                        el.className = "w-full bg-[#282a2c] text-white text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left";
                     } else {
-                        el.className = m === 'unrestricted' ?
-                            "w-full text-red-400 bg-red-950/20 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-red-900/40" :
-                            "w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left";
+                        el.className = "w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left";
                     }
                 }
             });
-            var topText = document.getElementById("top-branding-text");
-            if (topText) topText.innerText = "ozoneai_" + menuType;
             createNewChat();
         }
 
         function saveMessageToHistory(role, text, imageUrl) {
             var savedChats = localStorage.getItem("ozone_sessions");
             var sessions = savedChats ? JSON.parse(savedChats) : [];
-            
             var msgObj = { role: role, text: text };
             if (imageUrl) msgObj.image = imageUrl;
 
@@ -467,13 +459,7 @@
             
             if (savedChats) {
                 var sessions = JSON.parse(savedChats);
-                
-                var filteredSessions = sessions.filter(function(session) {
-                    if (session.mode === 'unrestricted' && !isAdminUnlocked) {
-                        return false; 
-                    }
-                    return true; 
-                });
+                var filteredSessions = sessions.filter(s => s.mode !== 'unrestricted' || isAdminUnlocked);
 
                 if (filteredSessions.length > 0) {
                     filteredSessions.forEach(function(session) {
@@ -489,7 +475,7 @@
                                 '<i class="fa-regular fa-message text-xs text-gray-500"></i>' +
                                 '<span class="truncate">' + displayTitle + '</span>' +
                             '</div>' +
-                            '<button onclick="deleteSingleHistory(\'' + session.id + '\', event)" class="delete-single-btn text-gray-500 hover:text-red-400 p-1 rounded transition ml-1">' +
+                            '<button onclick="deleteSingleHistory(\'' + session.id + '\', event)" class="text-gray-500 hover:text-red-400 p-1 rounded transition ml-1">' +
                                 '<i class="fa-solid fa-xmark text-xs"></i>' +
                             '</button>';
                         historyList.appendChild(item);
@@ -505,37 +491,29 @@
             var savedChats = localStorage.getItem("ozone_sessions");
             if (!savedChats) return;
             var sessions = JSON.parse(savedChats);
-            var activeSession = sessions.find(function(s) { return s.id === id; });
+            var activeSession = sessions.find(s => s.id === id);
             
             if (activeSession) {
                 currentMode = activeSession.mode;
-                
-                if (currentMode === 'unrestricted') {
-                    isAdminUnlocked = true;
-                    var lockIcon = document.getElementById("lock-icon");
-                    var adminText = document.getElementById("admin-text");
-                    var secretBtn = document.getElementById("menu-unrestricted");
-                    if (secretBtn) secretBtn.classList.remove("hidden");
-                    if (lockIcon) lockIcon.className = "fa-solid fa-lock-open text-green-400";
-                    if (adminText) adminText.innerText = "Admin Panel Active";
-                }
-
                 var chatBox = document.getElementById("chat-box");
                 if (!chatBox) return;
                 chatBox.innerHTML = "";
                 
+                var welcome = document.getElementById("welcome-message");
+                if (welcome) welcome.style.display = "none";
+
                 activeSession.messages.forEach(function(msg) {
                     if (msg.role === "user") {
                         var imgHtml = msg.image ? '<img src="' + msg.image + '" class="mt-2 rounded-xl max-w-[200px] border border-gray-700" />' : '';
                         chatBox.innerHTML += 
-                            '<div style="display: flex; flex-direction: column; align-items: flex-end; width: 100%; padding: 4px 0;">' +
+                            '<div style="display: flex; flex-direction: column; align-items: flex-end; width: 100%;">' +
                                 '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + msg.text + '</div>' +
                                 imgHtml +
                             '</div>';
                     } else {
                         var imgHtml = msg.image ? '<img src="' + msg.image + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-md" />' : '';
                         chatBox.innerHTML += 
-                            '<div style="display: flex; justify-content: flex-start; width: 100%; padding: 4px 0; padding-left: 4px;">' +
+                            '<div style="display: flex; justify-content: flex-start; width: 100%;">' +
                                 '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + msg.text + imgHtml + '</div>' +
                             '</div>';
                     }
@@ -551,7 +529,7 @@
             var savedChats = localStorage.getItem("ozone_sessions");
             if (savedChats) {
                 var sessions = JSON.parse(savedChats);
-                var updatedSessions = sessions.filter(function(s) { return s.id !== id; });
+                var updatedSessions = sessions.filter(s => s.id !== id);
                 localStorage.setItem("ozone_sessions", JSON.stringify(updatedSessions));
                 if (currentChatId === id) createNewChat();
                 else loadChatHistory();
@@ -563,20 +541,6 @@
                 localStorage.removeItem("ozone_sessions");
                 createNewChat();
             }
-        }
-
-        function fetchWithLongRetry(url, options, retries = 5, delay = 6000) {
-            return fetch(url, options)
-                .then(res => {
-                    if (!res.ok) {
-                        if (retries > 0) {
-                            return new Promise(resolve => setTimeout(resolve, delay))
-                                .then(() => fetchWithLongRetry(url, options, retries - 1, delay));
-                        }
-                        throw new Error("Server error");
-                    }
-                    return res.json();
-                });
         }
 
         function sendMessage() {
@@ -593,31 +557,54 @@
             var userImgHtml = selectedImageBase64 ? '<img src="' + selectedImageBase64 + '" class="mt-2 rounded-xl max-w-[200px] border border-gray-700" />' : '';
             
             chatBox.innerHTML +=
-                '<div style="display: flex; flex-direction: column; align-items: flex-end; width: 100%; padding: 4px 0;">' +
+                '<div style="display: flex; flex-direction: column; align-items: flex-end; width: 100%;">' +
                     '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + (message || "Sent an image") + '</div>' +
                     userImgHtml +
                 '</div>';
             
             saveMessageToHistory("user", message || "Sent an image", selectedImageBase64);
-            
-            var sendingImage = selectedImageBase64; 
-            clearSelectedImage(); 
+            var sendingImage = selectedImageBase64;
+            clearSelectedImage();
             inputField.value = "";
-            chatBox.scrollTop = chatBox.scrollHeight;
+            
+            setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 20);
 
             var loadingId = "loading-" + Date.now();
             chatBox.innerHTML += 
-                '<div id="' + loadingId + '" class="flex justify-start w-full pl-1 py-2">' +
+                '<div id="' + loadingId + '" class="flex justify-start w-full py-1">' +
                     '<div class="text-gray-400 text-xl font-bold tracking-widest thinking-dots"></div>' +
                 '</div>';
-            chatBox.scrollTop = chatBox.scrollHeight;
+            setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 20);
+
+            /* 🛠️ ጥገና፦ PHOTO AI ሁነታ ከመጣ በሰርቨር ፋንታ ቀጥታ ድንቅ ፎቶዎችን እንዲሰራ ተደርጓል */
+            if (currentMode === 'photo') {
+                var cleanPrompt = encodeURIComponent(message);
+                var generatedImageUrl = "https://image.pollinations.ai/p/" + cleanPrompt + "?width=1024&height=1024&nologo=true&seed=" + Date.now();
+                
+                setTimeout(() => {
+                    var loadingEl = document.getElementById(loadingId);
+                    if (loadingEl) loadingEl.remove();
+                    
+                    var replyText = (selectedLanguage === "am") ? "✨ እነሆ የፈለጉት ምስል ተሰርቷል፦" : "✨ Here is your generated image:";
+                    chatBox.innerHTML += 
+                        '<div style="display: flex; justify-content: flex-start; width: 100%;">' +
+                            '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed">' +
+                                '<div>' + replyText + '</div>' +
+                                '<img src="' + generatedImageUrl + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-xl" onload="document.getElementById(\'chat-box\').scrollTop = document.getElementById(\'chat-box\').scrollHeight;" />' +
+                            '</div>' +
+                        '</div>';
+                    saveMessageToHistory("ai", replyText, generatedImageUrl);
+                }, 1500);
+                return;
+            }
+
+            /* 🛠️ ለኖርማል ቻት የአማርኛ ባህሪን በደንብ ማስገደጃ (System Prompt) */
+            var langPrompt = (selectedLanguage === "am") ? 
+                "You must respond ONLY in Amharic using the Ethiopic/Ge'ez script. Even if the user types in latin script (like 'Endet neh'), you must understand it and answer back in Amharic text. Do not use German or English." : 
+                "Respond in English natively.";
 
             var endpoint = RENDER_BASE_URL + "/chat";
-            
-            /* 🛠️ ጥገና፦ AIው ሁልጊዜም አማርኛ እና እንግሊዝኛን ብቻ አቀናጅቶ እንዲመልስ የሚያስገድድ የላቀ መመሪያ (System Prompt) */
-            var systemInstructions = "You are OzoneAI Pro. You must communicate ONLY in Amharic (using Ethiopic Ge'ez script) and English. If the user greets or asks something in Amharic (even in Latinized text like 'Endet neh'), you must understand it and reply primarily in beautifully formatted Amharic. Avoid German or any other language.";
-
-            fetchWithLongRetry(endpoint, {
+            fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -626,28 +613,27 @@
                     password: inputAuthToken,
                     mode: currentMode,
                     chat_id: currentChatId,
-                    system_prompt: systemInstructions /* ሰርቨሩ ላይ እንዲያነበው ይላካል */
+                    system_prompt: langPrompt
                 })
             })
+            .then(res => res.json())
             .then(data => {
                 var loadingEl = document.getElementById(loadingId);
                 if (loadingEl) loadingEl.remove();
                 
-                var imgHtml = data.image ? '<img src="' + data.image + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-lg" />' : '';
                 chatBox.innerHTML += 
-                    '<div style="display: flex; justify-content: flex-start; width: 100%; padding: 4px 0; padding-left: 4px;">' +
-                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + data.reply + imgHtml + '</div>' +
+                    '<div style="display: flex; justify-content: flex-start; width: 100%;">' +
+                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + data.reply + '</div>' +
                     '</div>';
-                saveMessageToHistory("ai", data.reply, data.image);
-                
-                setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 50);
+                saveMessageToHistory("ai", data.reply, null);
+                setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
             })
             .catch(err => {
                 var loadingEl = document.getElementById(loadingId);
                 if (loadingEl) loadingEl.remove();
                 chatBox.innerHTML += 
-                    '<div class="flex justify-start w-full pl-1 py-1">' +
-                        '<div class="bg-red-950/20 text-red-400/90 text-xs rounded-xl px-4 py-2 border border-red-900/30">⚠️ Server is waking up or connection failed. Please try sending your message once more.</div>' +
+                    '<div class="flex justify-start w-full py-1">' +
+                        '<div class="bg-red-950/20 text-red-400/90 text-xs rounded-xl px-4 py-2 border border-red-900/30">⚠️ Connection failed. Please try again.</div>' +
                     '</div>';
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
