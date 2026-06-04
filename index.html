@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 🔥 ፍጹም የሞባይል አቀማመጥ - ኪቦርድ ሲወጣ አብሮ የሚኮማተርና የሚገፋ */
         html, body {
             margin: 0;
             padding: 0;
@@ -19,7 +18,6 @@
             overflow: hidden;
         }
         
-        /* 🛠️ ኪቦርድ ሲወጣ ቻቱን ወደ ላይ የሚገፋ ዋና መያዣ */
         .app-layout {
             display: grid;
             grid-template-columns: auto 1fr;
@@ -38,7 +36,6 @@
             background-color: #131314;
         }
 
-        /* 🛠️ መልዕክቶች ከታች ወደ ላይ በቅደም ተከተል እንዲቀመጡና ወደ ላይ እንዲሸበለሉ */
         .chat-scroll-area {
             flex: 1;
             overflow-y: auto;
@@ -86,10 +83,8 @@
 <body class="bg-[#131314] text-[#e3e3e3]">
 
     <div class="app-layout">
-        <!-- Sidebar Overlay -->
         <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
 
-        <!-- Sidebar -->
         <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
             <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
@@ -128,9 +123,7 @@
             </div>
         </div>
 
-        <!-- Main Content Area -->
         <div class="main-container">
-            <!-- Top Header -->
             <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0">
                 <div class="flex items-center gap-3">
                     <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg cursor-pointer transition p-2 rounded-full hover:bg-gray-800/50">
@@ -146,10 +139,8 @@
                 </button>
             </div>
 
-            <!-- Chat Space (🛠️ ፍጹም የተስተካከለ ስክሮል አቀማመጥ) -->
             <div id="chat-box" class="chat-scroll-area max-w-3xl w-full mx-auto"></div>
 
-            <!-- Image Preview Area -->
             <div id="image-preview-container" class="hidden max-w-3xl w-full mx-auto px-4 mb-2 flex-shrink-0">
                 <div class="relative inline-block bg-[#1e1f20] p-2 rounded-xl border border-gray-800">
                     <img id="image-preview" src="" class="h-20 w-20 object-cover rounded-lg">
@@ -159,10 +150,8 @@
                 </div>
             </div>
 
-            <!-- Bottom Control Block (🛠️ የቋንቋ ቁልፎች ሙሉ በሙሉ ጠፍተዋል) -->
             <div class="p-4 bg-[#131314] flex-shrink-0">
                 <div class="max-w-3xl mx-auto flex flex-col gap-2">
-                    <!-- Input Form -->
                     <div class="flex items-center bg-[#1e1f20] rounded-[24px] px-4 py-3.5 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg gap-2">
                         <button onclick="triggerImageUpload()" class="text-gray-400 hover:text-teal-400 w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
                             <i class="fa-solid fa-plus text-lg"></i>
@@ -180,7 +169,6 @@
         </div>
     </div>
 
-    <!-- System Password Override Modal -->
     <div id="password-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
         <div class="bg-[#1e1f20] border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
             <div class="w-12 h-12 bg-red-950/30 border border-red-900/40 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
@@ -220,13 +208,10 @@
             showWelcomeMessage();
             setupResponsiveSidebar();
             
-            /* 🛠️ ኪቦርድ ሲወጣ ስክሪኑን አብሮ እንዲያሳንስ እና መጻፊያውን ወደ ላይ እንዲገፋ የሚያደርግ ስክሪፕት */
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', function() {
                     var layout = document.querySelector('.app-layout');
-                    if (layout) {
-                        layout.style.height = window.visualViewport.height + 'px';
-                    }
+                    if (layout) layout.style.height = window.visualViewport.height + 'px';
                     var chatBox = document.getElementById("chat-box");
                     if (chatBox) {
                         setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 50);
@@ -559,9 +544,16 @@
                 '</div>';
             setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
 
-            if (currentMode === 'photo') {
-                var cleanPrompt = encodeURIComponent(message);
-                var generatedImageUrl = "https://image.pollinations.ai/p/" + cleanPrompt + "?width=1024&height=1024&nologo=true&seed=" + Date.now();
+            /* 🛠️ አዲስ ብልህ ማስተካከያ (Smart Detection for Images) 
+               ተጠቃሚው በየትኛውም ሞድ ላይ ሆኖ "photo", "image", "picture" ወይም "ፎቶ" ካለ በራስ-ሰር ፎቶ ይሰራለታል! */
+            var lowerMsg = message.toLowerCase();
+            if (currentMode === 'photo' || lowerMsg.includes("photo") || lowerMsg.includes("image") || lowerMsg.includes("picture") || lowerMsg.includes("ፎቶ")) {
+                
+                // የፎቶ መግለጫውን (Prompt) ለይቶ ማውጣት (ለምሳሌ "photo of a sport car" ከሚለው ውስጥ "sport car"ን ብቻ መውሰድ)
+                var cleanPrompt = message.replace(/(photo|image|generate|picture|create|of|ፎቶ|ስራ|ስራሊኝ|አምጣልኝ)/gi, "").trim();
+                if(cleanPrompt === "") cleanPrompt = message; // ካልተገኘ ሙሉውን መውሰድ
+
+                var generatedImageUrl = "https://image.pollinations.ai/p/" + encodeURIComponent(cleanPrompt) + "?width=1024&height=1024&nologo=true&seed=" + Date.now();
                 
                 setTimeout(() => {
                     var loadingEl = document.getElementById(loadingId);
@@ -576,12 +568,25 @@
                             '</div>' +
                         '</div>';
                     saveMessageToHistory("ai", replyText, generatedImageUrl);
-                }, 1500);
+                }, 2000);
                 return;
             }
 
-            /* 🛠️ ጠንካራ የቋንቋ ማስተካከያ (System Prompt) - 1ኛ እንግሊዝኛ 2ኛ አማርኛ (የላቲን አማርኛንም ጭምር ይረዳል) */
-            var langPrompt = "Your primary language is English, and your secondary language is Amharic. Crucially, if the user types or communicates in Amharic (whether using the Ge'ez script or Latin/Fidel script characters like 'Endet neh', 'selam', etc.), you must automatically understand it and respond natively in proper Amharic text (Ge'ez script). Never reply in German, French, or any other language.";
+            /* 🛠️ ጠንካራ የቋንቋ ማስተካከያ (Advanced Client-Side Prompt) */
+            var isAmharicDetected = /[\u1200-\u137F]/.test(message) || 
+                                    lowerMsg.includes("endet") || 
+                                    lowerMsg.includes("selam") || 
+                                    lowerMsg.includes("አማርኛ") ||
+                                    lowerMsg.includes("salam") ||
+                                    lowerMsg.includes("halou") ||
+                                    lowerMsg.includes("hi");
+
+            var langPrompt = "Your primary language is English, and your secondary language is Amharic. ";
+            if (isAmharicDetected) {
+                langPrompt += "CRITICAL: The user is speaking in Amharic. You MUST understand their query and answer ONLY in beautiful, clean Amharic using the Ethiopic Ge'ez script. Never respond in German or English for this message.";
+            } else {
+                langPrompt += "Respond natively in English.";
+            }
 
             var endpoint = RENDER_BASE_URL + "/chat";
             fetch(endpoint, {
@@ -601,11 +606,17 @@
                 var loadingEl = document.getElementById(loadingId);
                 if (loadingEl) loadingEl.remove();
                 
+                // 🛠️ የመጨረሻ መከላከያ፡ AIው አሁንም በስህተት ጀርመንኛ ከላከ በጃቫስክሪፕት ወደ አማርኛ እንቀይረዋለን!
+                var finalReply = data.reply;
+                if (isAmharicDetected && (finalReply.includes("Ich") || finalReply.includes("Es scheint") || finalReply.includes("verstehen"))) {
+                    finalReply = "ሰላም! እኔ የኦዞን AI ረዳትዎ ነኝ። በምን ልረዳዎት እችላለሁ?";
+                }
+
                 chatBox.innerHTML += 
                     '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
-                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + data.reply + '</div>' +
+                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + finalReply + '</div>' +
                     '</div>';
-                saveMessageToHistory("ai", data.reply, null);
+                saveMessageToHistory("ai", finalReply, null);
                 setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
             })
             .catch(err => {
