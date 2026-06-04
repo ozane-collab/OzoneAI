@@ -7,20 +7,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 🔥 ፍጹም የሆነ የሞባይል ስክሪን አቀማመጥ (Premium Mobile UI/UX) */
+        /* 🔥 ፍጹም የሞባይል አቀማመጥ - ኪቦርድ ሲወጣ አብሮ የሚኮማተርና የሚገፋ */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100vh;
-            height: 100dvh;
+            height: 100%;
             background-color: #131314;
             color: #e3e3e3;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             overflow: hidden;
-            overscroll-behavior: none;
         }
         
+        /* 🛠️ ኪቦርድ ሲወጣ ቻቱን ወደ ላይ የሚገፋ ዋና መያዣ */
         .app-layout {
             display: grid;
             grid-template-columns: auto 1fr;
@@ -33,14 +32,13 @@
         .main-container {
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            height: 100dvh;
+            height: 100%;
             min-height: 0;
             overflow: hidden;
             background-color: #131314;
         }
 
-        /* 🛠️ የአቀማመጥ ማስተካከያ፡ መልዕክቶች ልክ እንደ ChatGPT ከታች ወደ ላይ በሥርዓት እንዲደደሩ */
+        /* 🛠️ መልዕክቶች ከታች ወደ ላይ በቅደም ተከተል እንዲቀመጡና ወደ ላይ እንዲሸበለሉ */
         .chat-scroll-area {
             flex: 1;
             overflow-y: auto;
@@ -48,6 +46,7 @@
             padding: 16px;
             display: flex;
             flex-direction: column;
+            justify-content: flex-start;
             gap: 20px;
             -webkit-overflow-scrolling: touch;
         }
@@ -84,7 +83,7 @@
         }
     </style>
 </head>
-<body class="bg-[#131314] text-[#e3e3e3] select-none">
+<body class="bg-[#131314] text-[#e3e3e3]">
 
     <div class="app-layout">
         <!-- Sidebar Overlay -->
@@ -160,16 +159,9 @@
                 </div>
             </div>
 
-            <!-- Bottom Control Block (🛠️ የቋንቋ መቀያየሪያ ቁልፎች እና የመጻፊያ ሳጥን) -->
+            <!-- Bottom Control Block (🛠️ የቋንቋ ቁልፎች ሙሉ በሙሉ ጠፍተዋል) -->
             <div class="p-4 bg-[#131314] flex-shrink-0">
                 <div class="max-w-3xl mx-auto flex flex-col gap-2">
-                    
-                    <!-- 🛠️ አዲስ የቋንቋ መምረጫ ቁልፎች (Language Switcher) -->
-                    <div class="flex justify-end gap-1.5 px-1">
-                        <button id="lang-en" onclick="setLanguage('en')" class="text-[11px] font-bold bg-[#00f2fe] text-black px-2.5 py-1 rounded-md transition duration-150">EN</button>
-                        <button id="lang-am" onclick="setLanguage('am')" class="text-[11px] font-bold bg-[#282a2c] text-gray-400 px-2.5 py-1 rounded-md transition duration-150">አማ</button>
-                    </div>
-
                     <!-- Input Form -->
                     <div class="flex items-center bg-[#1e1f20] rounded-[24px] px-4 py-3.5 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg gap-2">
                         <button onclick="triggerImageUpload()" class="text-gray-400 hover:text-teal-400 w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
@@ -213,7 +205,6 @@
         var secretTapCount = 0;
         var isAdminUnlocked = false; 
         var selectedImageBase64 = null;
-        var selectedLanguage = "en"; // ነባሪ ቋንቋ እንግሊዝኛ ነው
 
         window.onload = function() {
             var inputElement = document.getElementById("user-input");
@@ -229,28 +220,20 @@
             showWelcomeMessage();
             setupResponsiveSidebar();
             
+            /* 🛠️ ኪቦርድ ሲወጣ ስክሪኑን አብሮ እንዲያሳንስ እና መጻፊያውን ወደ ላይ እንዲገፋ የሚያደርግ ስክሪፕት */
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', function() {
+                    var layout = document.querySelector('.app-layout');
+                    if (layout) {
+                        layout.style.height = window.visualViewport.height + 'px';
+                    }
                     var chatBox = document.getElementById("chat-box");
-                    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+                    if (chatBox) {
+                        setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 50);
+                    }
                 });
             }
         };
-
-        function setLanguage(lang) {
-            selectedLanguage = lang;
-            var enBtn = document.getElementById("lang-en");
-            var amBtn = document.getElementById("lang-am");
-            
-            if (lang === 'am') {
-                amBtn.className = "text-[11px] font-bold bg-[#00f2fe] text-black px-2.5 py-1 rounded-md transition duration-150";
-                enBtn.className = "text-[11px] font-bold bg-[#282a2c] text-gray-400 px-2.5 py-1 rounded-md transition duration-150";
-            } else {
-                enBtn.className = "text-[11px] font-bold bg-[#00f2fe] text-black px-2.5 py-1 rounded-md transition duration-150";
-                amBtn.className = "text-[11px] font-bold bg-[#282a2c] text-gray-400 px-2.5 py-1 rounded-md transition duration-150";
-            }
-            showWelcomeMessage();
-        }
 
         function triggerImageUpload() {
             document.getElementById("image-input").click();
@@ -356,13 +339,13 @@
 
         function showWelcomeMessage() {
             var title = "OzoneAI";
-            var subtitle = (selectedLanguage === "am") ? "ዛሬ በምን ልርዳህ?" : "How can I help you today?";
-            var placeholder = (selectedLanguage === "am") ? "ለኦዞን መልዕክት ይጻፉ..." : "Message OzoneAI...";
+            var subtitle = "How can I help you today?";
+            var placeholder = "Message OzoneAI...";
 
             if (currentMode === 'photo') {
                 title = "Ozone Photo AI";
-                subtitle = (selectedLanguage === "am") ? "ድንቅ ምስሎችን እዚህ ይፍጠሩ።" : "Generate & edit stunning images.";
-                placeholder = (selectedLanguage === "am") ? "ሊሰሩት የሚፈልጉትን ፎቶ ይግለጹ..." : "Describe the image you want to generate...";
+                subtitle = "Generate & edit stunning images.";
+                placeholder = "Describe the image you want to generate...";
             } else if (currentMode === 'video') {
                 title = "Ozone Video Automation";
                 subtitle = "Create & structure video scripts.";
@@ -506,14 +489,14 @@
                     if (msg.role === "user") {
                         var imgHtml = msg.image ? '<img src="' + msg.image + '" class="mt-2 rounded-xl max-w-[200px] border border-gray-700" />' : '';
                         chatBox.innerHTML += 
-                            '<div style="display: flex; flex-direction: column; align-items: flex-end; width: 100%;">' +
+                            '<div style="display: flex; flex-direction: column; align-items: flex-end; width: 100%; margin-bottom: 10px;">' +
                                 '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + msg.text + '</div>' +
                                 imgHtml +
                             '</div>';
                     } else {
                         var imgHtml = msg.image ? '<img src="' + msg.image + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-md" />' : '';
                         chatBox.innerHTML += 
-                            '<div style="display: flex; justify-content: flex-start; width: 100%;">' +
+                            '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
                                 '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + msg.text + imgHtml + '</div>' +
                             '</div>';
                     }
@@ -557,7 +540,7 @@
             var userImgHtml = selectedImageBase64 ? '<img src="' + selectedImageBase64 + '" class="mt-2 rounded-xl max-w-[200px] border border-gray-700" />' : '';
             
             chatBox.innerHTML +=
-                '<div style="display: flex; flex-direction: column; align-items: flex-end; width: 100%;">' +
+                '<div style="display: flex; flex-direction: column; align-items: flex-end; width: 100%; margin-bottom: 10px;">' +
                     '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + (message || "Sent an image") + '</div>' +
                     userImgHtml +
                 '</div>';
@@ -567,16 +550,15 @@
             clearSelectedImage();
             inputField.value = "";
             
-            setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 20);
+            setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
 
             var loadingId = "loading-" + Date.now();
             chatBox.innerHTML += 
                 '<div id="' + loadingId + '" class="flex justify-start w-full py-1">' +
                     '<div class="text-gray-400 text-xl font-bold tracking-widest thinking-dots"></div>' +
                 '</div>';
-            setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 20);
+            setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
 
-            /* 🛠️ ጥገና፦ PHOTO AI ሁነታ ከመጣ በሰርቨር ፋንታ ቀጥታ ድንቅ ፎቶዎችን እንዲሰራ ተደርጓል */
             if (currentMode === 'photo') {
                 var cleanPrompt = encodeURIComponent(message);
                 var generatedImageUrl = "https://image.pollinations.ai/p/" + cleanPrompt + "?width=1024&height=1024&nologo=true&seed=" + Date.now();
@@ -585,9 +567,9 @@
                     var loadingEl = document.getElementById(loadingId);
                     if (loadingEl) loadingEl.remove();
                     
-                    var replyText = (selectedLanguage === "am") ? "✨ እነሆ የፈለጉት ምስል ተሰርቷል፦" : "✨ Here is your generated image:";
+                    var replyText = "✨ Here is your generated image:";
                     chatBox.innerHTML += 
-                        '<div style="display: flex; justify-content: flex-start; width: 100%;">' +
+                        '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
                             '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed">' +
                                 '<div>' + replyText + '</div>' +
                                 '<img src="' + generatedImageUrl + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-xl" onload="document.getElementById(\'chat-box\').scrollTop = document.getElementById(\'chat-box\').scrollHeight;" />' +
@@ -598,10 +580,8 @@
                 return;
             }
 
-            /* 🛠️ ለኖርማል ቻት የአማርኛ ባህሪን በደንብ ማስገደጃ (System Prompt) */
-            var langPrompt = (selectedLanguage === "am") ? 
-                "You must respond ONLY in Amharic using the Ethiopic/Ge'ez script. Even if the user types in latin script (like 'Endet neh'), you must understand it and answer back in Amharic text. Do not use German or English." : 
-                "Respond in English natively.";
+            /* 🛠️ ጠንካራ የቋንቋ ማስተካከያ (System Prompt) - 1ኛ እንግሊዝኛ 2ኛ አማርኛ (የላቲን አማርኛንም ጭምር ይረዳል) */
+            var langPrompt = "Your primary language is English, and your secondary language is Amharic. Crucially, if the user types or communicates in Amharic (whether using the Ge'ez script or Latin/Fidel script characters like 'Endet neh', 'selam', etc.), you must automatically understand it and respond natively in proper Amharic text (Ge'ez script). Never reply in German, French, or any other language.";
 
             var endpoint = RENDER_BASE_URL + "/chat";
             fetch(endpoint, {
@@ -622,7 +602,7 @@
                 if (loadingEl) loadingEl.remove();
                 
                 chatBox.innerHTML += 
-                    '<div style="display: flex; justify-content: flex-start; width: 100%;">' +
+                    '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
                         '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + data.reply + '</div>' +
                     '</div>';
                 saveMessageToHistory("ai", data.reply, null);
