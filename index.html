@@ -37,7 +37,6 @@
             overflow: hidden;
             background-color: #131314;
             position: relative;
-            z-index: 10;
         }
 
         .chat-scroll-area {
@@ -87,19 +86,30 @@
             pointer-events: auto !important; 
         }
         
-        .thinking-dots::after {
-            content: '.';
-            animation: dots 1.5s infinite steps(4);
+        /* 🌟 የተስተካከለው የ3 ነጠብጣብ ማሰብያ CSS */
+        .thinking-dots {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #808082;
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 1;
+            padding: 4px 8px;
         }
-        @keyframes dots {
-            0% { content: ''; }
-            25% { content: '.'; }
-            50% { content: '..'; }
-            75% { content: '...'; }
-            100% { content: ''; }
+        .thinking-dots span {
+            animation: blinkDots 1.4s infinite both;
+        }
+        .thinking-dots span:nth-child(2) { animation-delay: .2s; }
+        .thinking-dots span:nth-child(3) { animation-delay: .4s; }
+
+        @keyframes blinkDots {
+            0% { opacity: .2; transform: scale(0.8); }
+            20% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: .2; transform: scale(0.8); }
         }
 
-        /* 🌟 የኮድ ማስቀመጫ ፍሬም ስታይል (የቅጂ ምልክት ያለው) */
+        /* 🌟 የኮድ ማስቀመጫ ፍሬም ስታይል */
         .code-container {
             background-color: #1e1f22;
             border: 1px solid #2f3136;
@@ -213,8 +223,8 @@
                 </div>
             </div>
 
-            <!-- Bottom Input Field -->
-            <div class="p-4 bg-[#131314] flex-shrink-0 relative z-30 border-t border-gray-900/40">
+            <!-- 🌟 የተስተካከለ የታችኛው የመልዕክት መላኪያ ፎርም (በሞባይል በፍጹም እንዳይሸፈን የተደረገ) -->
+            <div class="p-4 bg-[#131314] flex-shrink-0 relative z-30 border-t border-gray-900/20 pb-safe">
                 <div class="max-w-3xl mx-auto">
                     <div class="flex items-center bg-[#1e1f20] rounded-[24px] px-3 py-1.5 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg w-full relative">
                         
@@ -228,7 +238,7 @@
                         <input type="text" id="user-input" placeholder="Message OzoneAI..." class="block w-full bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[16px] py-2 pl-2 pr-12 relative z-10" autocomplete="off">
                         
                         <!-- Send Button -->
-                        <button type="button" id="send-btn" onclick="sendMessage()" ontouchstart="sendMessage()" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#00f2fe] w-12 h-12 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 z-50" style="min-width: 48px; min-height: 48px;">
+                        <button type="button" id="send-btn" onclick="sendMessage()" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#00f2fe] w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 z-50">
                             <i class="fa-solid fa-paper-plane text-base pointer-events-none"></i>
                         </button>
                         
@@ -351,7 +361,6 @@
             }
         }
 
-        /* 🌟 የኮድ ፎርማት ማስተካከያና የቅጂ ማድረጊያ አውቶማቲክ ፋንክሽን */
         function formatAIResponse(text) {
             var codeBlockRegex = /```(\w*)\n([\s\S]*?)
 ```/g;
@@ -407,10 +416,6 @@
         }
 
         function toggleSidebar(e) {
-            if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
             var sidebar = document.getElementById("sidebar");
             var overlay = document.getElementById("sidebar-overlay");
             if (!sidebar || !overlay) return;
@@ -669,7 +674,15 @@
                 });
                 chatBox.scrollTop = chatBox.scrollHeight;
                 loadChatHistory();
-                if(window.innerWidth <= 768) toggleSidebar();
+                if(window.innerWidth <= 768) {
+                    var sidebar = document.getElementById("sidebar");
+                    if (sidebar) {
+                        sidebar.classList.remove("sidebar-visible");
+                        sidebar.classList.add("sidebar-hidden");
+                    }
+                    var overlay = document.getElementById("sidebar-overlay");
+                    if (overlay) overlay.classList.add("hidden");
+                }
             }
         }
 
@@ -720,10 +733,11 @@
             
             setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
 
+            // 🌟 የተስተካከለው የ3 ነጠብጣብ አኒሜሽን ኮድ
             var loadingId = "loading-" + Date.now();
             chatBox.innerHTML += 
                 '<div id="' + loadingId + '" class="flex justify-start w-full py-1">' +
-                    '<div class="text-gray-400 text-xl font-bold tracking-widest thinking-dots">..</div>' +
+                    '<div class="thinking-dots"><span>.</span><span>.</span><span>.</span></div>' +
                 '</div>';
             setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
 
@@ -785,7 +799,7 @@
                 return;
             }
 
-            // PHOTO AI ENGINE (Pollinations Integration Fixed)
+            // PHOTO AI ENGINE
             if (currentMode === 'photo' || lowerMsg.includes("photo") || lowerMsg.includes("image") || lowerMsg.includes("picture") || lowerMsg.includes("ፎቶ") || lowerMsg.includes("ስራሊኝ") || lowerMsg.includes("አምጣልኝ")) {
                 var cleanPrompt = message.replace(/(photo|image|generate|picture|create|of|ፎቶ|ስራ|ስራሊኝ|አምጣልኝ)/gi, "").trim();
                 if(cleanPrompt === "") cleanPrompt = "futuristic cyberpunk character neon design artwork";
@@ -838,7 +852,6 @@
                 var finalReply = data.reply || "No response received.";
 
                 if (isAmharic && currentMode !== 'unrestricted') { 
-                    /* 🌟 የኮድ ሳጥን ሳያበላሽ ጽሑፉን ብቻ የመተርጎም ዘዴ */
                     if (!finalReply.includes("```")) {
                         finalReply = await smartTranslate(finalReply, "en", "am");
                     } else {
