@@ -120,17 +120,19 @@
                     <i class="fa-solid fa-clapperboard text-red-400"></i> Video Automation
                 </button>
 
+                <!-- Trigger Button on Long Click/Secret Taps -->
                 <button onclick="promptForSecretMode()" id="menu-unrestricted" class="hidden w-full text-red-400 bg-red-950/20 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-red-900/40">
                     <i id="lock-icon" class="fa-solid fa-lock text-red-500"></i> <span id="admin-text">Admin Panel Inactive</span>
                 </button>
                 
                 <div class="border-t border-gray-800/60 my-2 pt-2 flex flex-col flex-1">
                     <div class="flex justify-between items-center px-3 mb-2">
-                        <span onclick="secretTapTrigger()" class="text-[11px] text-gray-500 font-medium uppercase tracking-wider cursor-pointer select-none">Recent Chats</span>
+                        <span onclick="secretTapTrigger()" id="history-label-text" class="text-[11px] text-gray-500 font-medium uppercase tracking-wider cursor-pointer select-none">Recent Chats</span>
                         <button onclick="clearAllHistory()" class="text-gray-600 hover:text-red-400 text-xs transition cursor-pointer">
                             <i class="fa-regular fa-trash-can"></i>
                         </button>
                     </div>
+                    <!-- Dynamic History Container -->
                     <div id="chat-history-list" class="flex flex-col gap-1 overflow-y-auto max-h-[220px]"></div>
                 </div>
             </div>
@@ -181,7 +183,7 @@
                         <!-- Text Input -->
                         <input type="text" id="user-input" placeholder="Message OzoneAI..." class="block w-full bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[16px] py-2 px-2 mr-12" autocomplete="off">
                         
-                        <!-- Send Button (Positioned properly to never be blocked) -->
+                        <!-- Send Button -->
                         <button type="button" id="send-btn" onclick="sendMessage()" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#00f2fe] w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 z-50">
                             <i class="fa-solid fa-paper-plane text-base"></i>
                         </button>
@@ -213,9 +215,9 @@
 
         var currentChatId = null;
         var currentMode = 'chat'; 
-        var inputAuthToken = ""; 
+        var inputAuthToken = sessionStorage.getItem("admin_session_token") || ""; 
         var secretTapCount = 0;
-        var isAdminUnlocked = false; 
+        var isAdminUnlocked = sessionStorage.getItem("admin_session_token") === "E12N21OSK"; 
         var selectedImageBase64 = null;
 
         window.onload = function() {
@@ -228,6 +230,17 @@
                     }
                 };
             }
+
+            // Sync UI if admin was unlocked earlier in this session
+            if (isAdminUnlocked) {
+                var secretBtn = document.getElementById("menu-unrestricted");
+                if (secretBtn) secretBtn.classList.remove("hidden");
+                var lockIcon = document.getElementById("lock-icon");
+                var adminText = document.getElementById("admin-text");
+                if (lockIcon) lockIcon.className = "fa-solid fa-lock-open text-green-400";
+                if (adminText) adminText.innerText = "Admin Panel Active";
+            }
+
             loadChatHistory();
             showWelcomeMessage();
             setupResponsiveSidebar();
@@ -320,8 +333,9 @@
         }
 
         function promptForSecretMode() {
-            if (isAdminUnlocked && currentMode !== 'unrestricted') {
+            if (isAdminUnlocked) {
                 updateActiveMenuUI('unrestricted');
+                createNewChat();
                 return;
             }
             var modal = document.getElementById("password-modal");
@@ -348,12 +362,14 @@
             if (pass === "E12N21OSK") {
                 inputAuthToken = pass;
                 isAdminUnlocked = true; 
+                sessionStorage.setItem("admin_session_token", pass); // Temporary validation token
                 closePasswordModal();
                 var lockIcon = document.getElementById("lock-icon");
                 var adminText = document.getElementById("admin-text");
                 if (lockIcon) lockIcon.className = "fa-solid fa-lock-open text-green-400";
                 if (adminText) adminText.innerText = "Admin Panel Active";
                 updateActiveMenuUI('unrestricted');
+                createNewChat();
             } else {
                 alert("❌ Access Denied.");
                 closePasswordModal();
@@ -427,22 +443,26 @@
                     }
                 }
             });
-            var placeholder = "Message OzoneAI...";
-            if (menuType === 'photo') placeholder = "Describe the image you want to generate...";
-            else if (menuType === 'video') placeholder = "Enter video topic or concept...";
-            else if (menuType === 'unrestricted') placeholder = "Execute command...";
             
-            var inputEl = document.getElementById("user-input");
-            if (inputEl) inputEl.placeholder = placeholder;
+            var historyLabel = document.getElementById("history-label-text");
+            if (historyLabel) {
+                historyLabel.innerText = (menuType === 'unrestricted') ? "Secret Terminals" : "Recent Chats";
+            }
         }
 
         function selectMenu(menuType) {
+            if (menuType === 'unrestricted' && !isAdminUnlocked) {
+                promptForSecretMode();
+                return;
+            }
             updateActiveMenuUI(menuType);
             createNewChat();
         }
 
         function saveMessageToHistory(role, text, imageUrl) {
-            var savedChats = localStorage.getItem("ozone_sessions");
+            // Use entirely separate keys for standard and restricted data logs
+            var storageKey = (currentMode === 'unrestricted') ? "ozone_admin_sessions" : "ozone_sessions";
+            var savedChats = localStorage.getItem(storageKey);
             var sessions = savedChats ? JSON.parse(savedChats) : [];
             var msgObj = { role: role, text: text };
             if (imageUrl) msgObj.image = imageUrl;
@@ -452,7 +472,7 @@
                 var newSession = {
                     id: currentChatId,
                     mode: currentMode,
-                    title: "[" + currentMode.toUpperCase() + "] " + text.substring(0, 15),
+                    title: (currentMode === 'unrestricted' ? "⚠️ " : "[" + currentMode.toUpperCase() + "] ") + text.substring(0, 15),
                     messages: [msgObj]
                 };
                 sessions.unshift(newSession);
@@ -464,22 +484,23 @@
                     }
                 }
             }
-            localStorage.setItem("ozone_sessions", JSON.stringify(sessions));
+            localStorage.setItem(storageKey, JSON.stringify(sessions));
             loadChatHistory();
         }
 
         function loadChatHistory() {
             var historyList = document.getElementById("chat-history-list");
             if (!historyList) return;
-            var savedChats = localStorage.getItem("ozone_sessions");
+            
+            // Query ONLY the key associated with the active screen profile
+            var storageKey = (currentMode === 'unrestricted') ? "ozone_admin_sessions" : "ozone_sessions";
+            var savedChats = localStorage.getItem(storageKey);
             historyList.innerHTML = "";
             
             if (savedChats) {
                 var sessions = JSON.parse(savedChats);
-                var filteredSessions = sessions.filter(s => s.mode !== 'unrestricted' || isAdminUnlocked);
-
-                if (filteredSessions.length > 0) {
-                    filteredSessions.forEach(function(session) {
+                if (sessions.length > 0) {
+                    sessions.forEach(function(session) {
                         var displayTitle = session.title;
                         if (displayTitle.length > 20) displayTitle = displayTitle.substring(0, 18) + "...";
                         var isActive = session.id === currentChatId ? "bg-[#282a2c]/60 text-white" : "text-gray-400";
@@ -500,12 +521,13 @@
                     return;
                 }
             }
-            historyList.innerHTML = '<div class="text-xs text-gray-500 italic px-3 py-1">No recent chats</div>';
+            historyList.innerHTML = '<div class="text-xs text-gray-500 italic px-3 py-1">No chats found</div>';
         }
 
         function openChatSession(id) {
             currentChatId = id;
-            var savedChats = localStorage.getItem("ozone_sessions");
+            var storageKey = (currentMode === 'unrestricted') ? "ozone_admin_sessions" : "ozone_sessions";
+            var savedChats = localStorage.getItem(storageKey);
             if (!savedChats) return;
             var sessions = JSON.parse(savedChats);
             var activeSession = sessions.find(s => s.id === id);
@@ -544,19 +566,21 @@
 
         function deleteSingleHistory(id, event) {
             if (event) event.stopPropagation();
-            var savedChats = localStorage.getItem("ozone_sessions");
+            var storageKey = (currentMode === 'unrestricted') ? "ozone_admin_sessions" : "ozone_sessions";
+            var savedChats = localStorage.getItem(storageKey);
             if (savedChats) {
                 var sessions = JSON.parse(savedChats);
                 var updatedSessions = sessions.filter(s => s.id !== id);
-                localStorage.setItem("ozone_sessions", JSON.stringify(updatedSessions));
+                localStorage.setItem(storageKey, JSON.stringify(updatedSessions));
                 if (currentChatId === id) createNewChat();
                 else loadChatHistory();
             }
         }
 
         function clearAllHistory() {
-            if(confirm("Are you sure you want to clear all chat history?")) {
-                localStorage.removeItem("ozone_sessions");
+            if(confirm("Are you sure you want to clear this view's history?")) {
+                var storageKey = (currentMode === 'unrestricted') ? "ozone_admin_sessions" : "ozone_sessions";
+                localStorage.removeItem(storageKey);
                 createNewChat();
             }
         }
@@ -613,9 +637,7 @@
                 var cleanPrompt = message.replace(/(photo|image|generate|picture|create|of|ፎቶ|ስራ|ስራሊኝ|አምጣልኝ)/gi, "").trim();
                 if(cleanPrompt === "") cleanPrompt = message;
 
-                if (isAmharic) {
-                    cleanPrompt = await smartTranslate(cleanPrompt, "auto", "en");
-                }
+                if (isAmharic) { cleanPrompt = await smartTranslate(cleanPrompt, "auto", "en"); }
 
                 var generatedImageUrl = "https://image.pollinations.ai/p/" + encodeURIComponent(cleanPrompt) + "?width=1024&height=1024&nologo=true&seed=" + Date.now();
                 
@@ -658,9 +680,7 @@
                 
                 var finalReply = data.reply || "No response received.";
 
-                if (isAmharic) {
-                    finalReply = await smartTranslate(finalReply, "en", "am");
-                }
+                if (isAmharic) { finalReply = await smartTranslate(finalReply, "en", "am"); }
 
                 chatBox.innerHTML += 
                     '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
