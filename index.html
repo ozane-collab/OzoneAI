@@ -87,8 +87,10 @@
 <body class="bg-[#131314] text-[#e3e3e3] select-none">
 
     <div class="app-layout">
+        <!-- Sidebar Overlay -->
         <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
 
+        <!-- Sidebar -->
         <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
             <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
@@ -127,7 +129,9 @@
             </div>
         </div>
 
+        <!-- Main Content Area -->
         <div class="main-container">
+            <!-- Top Header -->
             <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20">
                 <div class="flex items-center gap-3">
                     <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg cursor-pointer transition p-2 rounded-full hover:bg-gray-800/50">
@@ -143,8 +147,10 @@
                 </button>
             </div>
 
+            <!-- Chat Space -->
             <div id="chat-box" class="px-4 py-4 max-w-3xl w-full mx-auto"></div>
 
+            <!-- Image Preview Area -->
             <div id="image-preview-container" class="hidden max-w-3xl w-full mx-auto px-4 mb-2">
                 <div class="relative inline-block bg-[#1e1f20] p-2 rounded-xl border border-gray-800">
                     <img id="image-preview" src="" class="h-20 w-20 object-cover rounded-lg">
@@ -154,24 +160,26 @@
                 </div>
             </div>
 
-            <div class="p-4 bg-[#131314]">
-                <div class="max-w-3xl mx-auto flex items-center bg-[#1e1f20] rounded-full px-3 py-2 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg gap-2">
+            <!-- Input Form Field (🛠️ ቁመቱ ከፍ እንዲል እና በሞባይል እንዳይበላሽ የተስተካከለ) -->
+            <div class="p-4 bg-[#131314] pb-safe">
+                <div class="max-w-3xl mx-auto flex items-center bg-[#1e1f20] rounded-[24px] px-4 py-3 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg gap-2">
                     
-                    <button onclick="triggerImageUpload()" class="text-gray-400 hover:text-teal-400 w-9 h-9 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
-                        <i class="fa-solid fa-plus text-base"></i>
+                    <button onclick="triggerImageUpload()" class="text-gray-400 hover:text-teal-400 w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
+                        <i class="fa-solid fa-plus text-lg"></i>
                     </button>
                     <input type="file" id="image-input" accept="image/*" class="hidden" onchange="previewImage(event)">
 
-                    <input type="text" id="user-input" placeholder="Message OzoneAI..." class="flex-1 bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[15px] py-1.5 px-1 min-w-0" autocomplete="off">
+                    <input type="text" id="user-input" placeholder="Message OzoneAI..." class="flex-1 bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[16px] py-1 px-1 min-w-0" autocomplete="off">
                     
-                    <button id="send-btn" onclick="sendMessage()" class="text-gray-400 hover:text-[#00f2fe] w-9 h-9 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
-                        <i class="fa-solid fa-paper-plane text-sm"></i>
+                    <button id="send-btn" onclick="sendMessage()" class="text-gray-400 hover:text-[#00f2fe] w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
+                        <i class="fa-solid fa-paper-plane text-base"></i>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- System Password Override Modal -->
     <div id="password-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
         <div class="bg-[#1e1f20] border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
             <div class="w-12 h-12 bg-red-950/30 border border-red-900/40 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
@@ -188,7 +196,6 @@
     </div>
 
     <script>
-        /* 🔥 ትክክለኛው የተረጋገጠ ሰርቨር ሊንክ እዚህ ገብቷል */
         var RENDER_BASE_URL = "https://ozoneai.onrender.com"; 
 
         var currentChatId = null;
@@ -215,7 +222,9 @@
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', function() {
                     var chatBox = document.getElementById("chat-box");
-                    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+                    if (chatBox) {
+                        setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
+                    }
                 });
             }
         };
@@ -578,7 +587,6 @@
 
             if (message === "" && !selectedImageBase64) return;
 
-            /* 🛠️ ጥገና፡ .remove() ክራሽ እንዳያደርግ በ Style Display ተተክቷል */
             var welcome = document.getElementById("welcome-message");
             if (welcome) welcome.style.display = "none";
             
@@ -606,6 +614,9 @@
 
             var endpoint = RENDER_BASE_URL + "/chat";
             
+            /* 🛠️ ጥገና፦ AIው ሁልጊዜም አማርኛ እና እንግሊዝኛን ብቻ አቀናጅቶ እንዲመልስ የሚያስገድድ የላቀ መመሪያ (System Prompt) */
+            var systemInstructions = "You are OzoneAI Pro. You must communicate ONLY in Amharic (using Ethiopic Ge'ez script) and English. If the user greets or asks something in Amharic (even in Latinized text like 'Endet neh'), you must understand it and reply primarily in beautifully formatted Amharic. Avoid German or any other language.";
+
             fetchWithLongRetry(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -614,7 +625,8 @@
                     image: sendingImage, 
                     password: inputAuthToken,
                     mode: currentMode,
-                    chat_id: currentChatId
+                    chat_id: currentChatId,
+                    system_prompt: systemInstructions /* ሰርቨሩ ላይ እንዲያነበው ይላካል */
                 })
             })
             .then(data => {
@@ -628,7 +640,6 @@
                     '</div>';
                 saveMessageToHistory("ai", data.reply, data.image);
                 
-                /* 🛠️ ጥገና፡ ምላሹ ረጅም ከሆነ በራስ-ሰር ወደታች ሙሉ በሙሉ እንዲወርድ የተሻሻለ */
                 setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 50);
             })
             .catch(err => {
