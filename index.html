@@ -83,8 +83,10 @@
 <body class="bg-[#131314] text-[#e3e3e3]">
 
     <div class="app-layout">
+        <!-- Sidebar Overlay -->
         <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
 
+        <!-- Sidebar -->
         <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
             <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
@@ -123,7 +125,9 @@
             </div>
         </div>
 
+        <!-- Main Content Area -->
         <div class="main-container">
+            <!-- Top Header -->
             <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0">
                 <div class="flex items-center gap-3">
                     <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg cursor-pointer transition p-2 rounded-full hover:bg-gray-800/50">
@@ -139,8 +143,10 @@
                 </button>
             </div>
 
+            <!-- Chat Space -->
             <div id="chat-box" class="chat-scroll-area max-w-3xl w-full mx-auto"></div>
 
+            <!-- Image Preview Area -->
             <div id="image-preview-container" class="hidden max-w-3xl w-full mx-auto px-4 mb-2 flex-shrink-0">
                 <div class="relative inline-block bg-[#1e1f20] p-2 rounded-xl border border-gray-800">
                     <img id="image-preview" src="" class="h-20 w-20 object-cover rounded-lg">
@@ -150,6 +156,7 @@
                 </div>
             </div>
 
+            <!-- Bottom Input Field -->
             <div class="p-4 bg-[#131314] flex-shrink-0">
                 <div class="max-w-3xl mx-auto flex flex-col gap-2">
                     <div class="flex items-center bg-[#1e1f20] rounded-[24px] px-4 py-3.5 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg gap-2">
@@ -169,6 +176,7 @@
         </div>
     </div>
 
+    <!-- Password Modal -->
     <div id="password-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
         <div class="bg-[#1e1f20] border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
             <div class="w-12 h-12 bg-red-950/30 border border-red-900/40 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
@@ -283,7 +291,7 @@
 
         function promptForSecretMode() {
             if (isAdminUnlocked && currentMode !== 'unrestricted') {
-                selectMenu('unrestricted');
+                updateActiveMenuUI('unrestricted');
                 return;
             }
             var modal = document.getElementById("password-modal");
@@ -315,7 +323,7 @@
                 var adminText = document.getElementById("admin-text");
                 if (lockIcon) lockIcon.className = "fa-solid fa-lock-open text-green-400";
                 if (adminText) adminText.innerText = "Admin Panel Active";
-                selectMenu('unrestricted');
+                updateActiveMenuUI('unrestricted');
             } else {
                 alert("❌ Access Denied.");
                 closePasswordModal();
@@ -373,7 +381,8 @@
             }
         }
 
-        function selectMenu(menuType) {
+        /* 🛠️ ጥንቁቅ ማስተካከያ 1፦ ሜኑዎችን በስርዓት መቀያየሪያ ፈንክሽን */
+        function updateActiveMenuUI(menuType) {
             currentMode = menuType;
             var topText = document.getElementById("top-branding-text");
             if (topText) topText.innerText = "ozoneai_" + menuType;
@@ -389,6 +398,17 @@
                     }
                 }
             });
+            var placeholder = "Message OzoneAI...";
+            if (menuType === 'photo') placeholder = "Describe the image you want to generate...";
+            else if (menuType === 'video') placeholder = "Enter video topic or concept...";
+            else if (menuType === 'unrestricted') placeholder = "Execute command...";
+            
+            var inputEl = document.getElementById("user-input");
+            if (inputEl) inputEl.placeholder = placeholder;
+        }
+
+        function selectMenu(menuType) {
+            updateActiveMenuUI(menuType);
             createNewChat();
         }
 
@@ -454,6 +474,7 @@
             historyList.innerHTML = '<div class="text-xs text-gray-500 italic px-3 py-1">No recent chats</div>';
         }
 
+        /* 🛠️ ጥንቁቅ ማስተካከያ 2፦ ከሂስትሪ ሲከፈት ሞዱን አብሮ እንዲቀይር ተደረገ */
         function openChatSession(id) {
             currentChatId = id;
             var savedChats = localStorage.getItem("ozone_sessions");
@@ -462,7 +483,9 @@
             var activeSession = sessions.find(s => s.id === id);
             
             if (activeSession) {
-                currentMode = activeSession.mode;
+                /* 🚨 እዚህ ጋር የነበረው ትልቁ ስህተት ተፈታ! አብሮ ሜኑውን ይቀይራል */
+                updateActiveMenuUI(activeSession.mode);
+                
                 var chatBox = document.getElementById("chat-box");
                 if (!chatBox) return;
                 chatBox.innerHTML = "";
@@ -511,7 +534,23 @@
             }
         }
 
-        function sendMessage() {
+        /* 🛠️ ፍጹም የቋንቋ ትርጉም በቦታው የሚያከናውን ብልህ ፈንክሽን (Client-Side Amharic Interceptor) */
+        async function translateText(text, targetLang) {
+            try {
+                // ነፃ እና እጅግ ፈጣን የሆነውን የ MyMemory API በመጠቀም በሰከንድ ውስጥ መተርጎም
+                var url = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(text) + "&langpair=" + targetLang;
+                let response = await fetch(url);
+                let data = await response.json();
+                if(data && data.responseData) {
+                    return data.responseData.translatedText;
+                }
+                return text;
+            } catch (e) {
+                return text;
+            }
+        }
+
+        async function sendMessage() {
             var inputField = document.getElementById("user-input");
             var chatBox = document.getElementById("chat-box");
             if (!inputField || !chatBox) return;
@@ -544,14 +583,18 @@
                 '</div>';
             setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
 
-            /* 🛠️ አዲስ ብልህ ማስተካከያ (Smart Detection for Images) 
-               ተጠቃሚው በየትኛውም ሞድ ላይ ሆኖ "photo", "image", "picture" ወይም "ፎቶ" ካለ በራስ-ሰር ፎቶ ይሰራለታል! */
             var lowerMsg = message.toLowerCase();
+            
+            /* 🛠️ የፎቶ ጥያቄዎችን በየትኛውም ሞድ ላይ ቢሆን የመለየት ብቃት */
             if (currentMode === 'photo' || lowerMsg.includes("photo") || lowerMsg.includes("image") || lowerMsg.includes("picture") || lowerMsg.includes("ፎቶ")) {
                 
-                // የፎቶ መግለጫውን (Prompt) ለይቶ ማውጣት (ለምሳሌ "photo of a sport car" ከሚለው ውስጥ "sport car"ን ብቻ መውሰድ)
                 var cleanPrompt = message.replace(/(photo|image|generate|picture|create|of|ፎቶ|ስራ|ስራሊኝ|አምጣልኝ)/gi, "").trim();
-                if(cleanPrompt === "") cleanPrompt = message; // ካልተገኘ ሙሉውን መውሰድ
+                if(cleanPrompt === "") cleanPrompt = message;
+
+                // በአማርኛ የተጻፈ የፎቶ ማዘዣ ከሆነ ወደ እንግሊዝኛ ቀይሮ ለ Pollinations መላክ ጥራቱን ይጨምረዋል
+                if (/[\u1200-\u137F]/.test(cleanPrompt)) {
+                    cleanPrompt = await translateText(cleanPrompt, "am|en");
+                }
 
                 var generatedImageUrl = "https://image.pollinations.ai/p/" + encodeURIComponent(cleanPrompt) + "?width=1024&height=1024&nologo=true&seed=" + Date.now();
                 
@@ -572,7 +615,7 @@
                 return;
             }
 
-            /* 🛠️ ጠንካራ የቋንቋ ማስተካከያ (Advanced Client-Side Prompt) */
+            /* 🛠️ የአማርኛ መከላከያ ሲስተም (The Ultimate Amharic Interceptor) */
             var isAmharicDetected = /[\u1200-\u137F]/.test(message) || 
                                     lowerMsg.includes("endet") || 
                                     lowerMsg.includes("selam") || 
@@ -581,11 +624,10 @@
                                     lowerMsg.includes("halou") ||
                                     lowerMsg.includes("hi");
 
-            var langPrompt = "Your primary language is English, and your secondary language is Amharic. ";
+            var finalPayloadMessage = message;
+            // ተጠቃሚው በአማርኛ ከጻፈ ሰርቨሩ እንዳያበላሸው መጀመሪያ ወደ እንግሊዝኛ እንቀይረዋለን
             if (isAmharicDetected) {
-                langPrompt += "CRITICAL: The user is speaking in Amharic. You MUST understand their query and answer ONLY in beautiful, clean Amharic using the Ethiopic Ge'ez script. Never respond in German or English for this message.";
-            } else {
-                langPrompt += "Respond natively in English.";
+                finalPayloadMessage = await translateText(message, "am|en");
             }
 
             var endpoint = RENDER_BASE_URL + "/chat";
@@ -593,23 +635,28 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    message: message,
+                    message: finalPayloadMessage,
                     image: sendingImage, 
                     password: inputAuthToken,
                     mode: currentMode,
                     chat_id: currentChatId,
-                    system_prompt: langPrompt
+                    system_prompt: "Respond natively and dynamically in clear English language only."
                 })
             })
             .then(res => res.json())
-            .then(data => {
+            .then(async data => {
                 var loadingEl = document.getElementById(loadingId);
                 if (loadingEl) loadingEl.remove();
                 
-                // 🛠️ የመጨረሻ መከላከያ፡ AIው አሁንም በስህተት ጀርመንኛ ከላከ በጃቫስክሪፕት ወደ አማርኛ እንቀይረዋለን!
                 var finalReply = data.reply;
-                if (isAmharicDetected && (finalReply.includes("Ich") || finalReply.includes("Es scheint") || finalReply.includes("verstehen"))) {
-                    finalReply = "ሰላም! እኔ የኦዞን AI ረዳትዎ ነኝ። በምን ልረዳዎት እችላለሁ?";
+
+                // ተጠቃሚው መጀመሪያ የጠየቀው በአማርኛ ከሆነ፣ የመጣውን የእንግሊዝኛ ምላሽ ወደ ውብ አማርኛ እንቀይረዋለን!
+                if (isAmharicDetected) {
+                    finalReply = await translateText(finalReply, "en|am");
+                    // ማረጋገጫ፦ APIው በትክክል ካልቀየረው ወይም ባዶ ከሆነ የቋሚ ሰላምታ ምላሽ መስጠት
+                    if(!finalReply || finalReply.trim() === "" || finalReply.includes("Ich") || finalReply.includes("verstehen")) {
+                        finalReply = "ሰላም! እኔ የኦዞን AI ረዳትዎ ነኝ። በምን ልረዳዎት እችላለሁ?";
+                    }
                 }
 
                 chatBox.innerHTML += 
