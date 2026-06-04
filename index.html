@@ -94,8 +94,10 @@
 <body class="bg-[#131314] text-[#e3e3e3]">
 
     <div class="app-layout">
+        <!-- Sidebar Overlay -->
         <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
 
+        <!-- Sidebar -->
         <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
             <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
@@ -134,7 +136,9 @@
             </div>
         </div>
 
+        <!-- Main Content Area -->
         <div class="main-container">
+            <!-- Top Header -->
             <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0">
                 <div class="flex items-center gap-3">
                     <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg cursor-pointer transition p-2 rounded-full hover:bg-gray-800/50">
@@ -150,8 +154,10 @@
                 </button>
             </div>
 
+            <!-- Chat Space -->
             <div id="chat-box" class="chat-scroll-area max-w-3xl w-full mx-auto"></div>
 
+            <!-- Image Preview Area -->
             <div id="image-preview-container" class="hidden max-w-3xl w-full mx-auto px-4 mb-2 flex-shrink-0">
                 <div class="relative inline-block bg-[#1e1f20] p-2 rounded-xl border border-gray-800">
                     <img id="image-preview" src="" class="h-20 w-20 object-cover rounded-lg">
@@ -161,6 +167,7 @@
                 </div>
             </div>
 
+            <!-- Bottom Input Field -->
             <div class="p-4 bg-[#131314] flex-shrink-0">
                 <div class="max-w-3xl mx-auto flex flex-col gap-2">
                     <div class="flex items-center bg-[#1e1f20] rounded-[24px] px-4 py-3.5 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg gap-2">
@@ -180,6 +187,7 @@
         </div>
     </div>
 
+    <!-- Password Modal -->
     <div id="password-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
         <div class="bg-[#1e1f20] border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
             <div class="w-12 h-12 bg-red-950/30 border border-red-900/40 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
@@ -277,7 +285,6 @@
             }
         }
 
-        // ነፃ የትርጉም መፈለጊያ ኢንጂን
         async function smartTranslate(text, source, target) {
             try {
                 var url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=" + source + "&tl=" + target + "&dt=t&q=" + encodeURIComponent(text);
@@ -582,9 +589,8 @@
                 '</div>';
             setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
 
-            var lowerMsg = message.toLowerCase();
+            var lowerMsg = message ? message.toLowerCase() : "";
             
-            // የተሻሻለ የአማርኛ መለያ መቆጣጠሪያ
             var isAmharic = /[\u1200-\u137F]/.test(message) || 
                             lowerMsg.includes("endet") || 
                             lowerMsg.includes("selam") || 
@@ -598,7 +604,6 @@
                             lowerMsg.includes("kankaw") ||
                             lowerMsg.includes("tshuf");
 
-            // ፎቶ ከሆነ እዚህ ጋር ራሱ ቆርጦ ይጨርሳል
             if (currentMode === 'photo' || lowerMsg.includes("photo") || lowerMsg.includes("image") || lowerMsg.includes("picture") || lowerMsg.includes("ፎቶ") || lowerMsg.includes("ስራሊኝ") || lowerMsg.includes("አምጣልኝ")) {
                 var cleanPrompt = message.replace(/(photo|image|generate|picture|create|of|ፎቶ|ስራ|ስራሊኝ|አምጣልኝ)/gi, "").trim();
                 if(cleanPrompt === "") cleanPrompt = message;
@@ -625,7 +630,7 @@
             }
 
             var finalPayloadMessage = message;
-            if (isAmharic) {
+            if (isAmharic && message !== "") {
                 finalPayloadMessage = await smartTranslate(message, "auto", "en");
             }
 
@@ -646,7 +651,7 @@
                 var loadingEl = document.getElementById(loadingId);
                 if (loadingEl) loadingEl.remove();
                 
-                var finalReply = data.reply;
+                var finalReply = data.reply || "No response received.";
 
                 if (isAmharic) {
                     finalReply = await smartTranslate(finalReply, "en", "am");
