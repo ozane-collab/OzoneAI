@@ -2,65 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>OzoneAI Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 🔥 የሞባይል ስክሪን ኪቦርድ ሲመጣ ሙሉ በሙሉ እንዳይበላሽ የሚቆልፍ አዲሱ የ CSS መዋቅር */
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100vh;
-            height: 100dvh; /* የሞባይል ኪቦርድን መጠን በራሱ የሚለካ */
+        /* የሞባይል ስክሪን እንዳይበላሽና ኪቦርድ ሲወጣ ቻቱ ብቻ እንዲሸብለል የሚያደርግ */
+        body {
             background-color: #131314;
-            color: #e3e3e3;
-            font-family: sans-serif;
-            overflow: hidden;
             overscroll-behavior: none;
         }
-        
-        .app-layout {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            height: 100vh;
-            height: 100dvh;
-            width: 100%;
-            overflow: hidden;
-        }
-        
-        .main-container {
-            display: grid;
-            grid-template-rows: auto 1fr auto; 
-            height: 100vh;
-            height: 100dvh;
-            min-height: 0;
-            overflow: hidden;
-            background-color: #131314;
-        }
-
         #chat-box {
-            overflow-y: auto !important;
-            display: flex !important;
-            flex-direction: column !important;
-            min-height: 0 !important;
-            height: 100% !important;
+            flex: 1;
+            overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
-
-        #welcome-message {
-            margin: auto !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: center !important;
-            align-items: center !important;
-            text-align: center !important;
-            padding: 20px !important;
-        }
-
-        .sidebar-hidden { transform: translateX(-100%); opacity: 0; pointer-events: none; }
-        .sidebar-visible { transform: translateX(0); opacity: 1; pointer-events: auto; }
+        .sidebar-hidden { transform: translateX(-100%); }
+        .sidebar-visible { transform: translateX(0); }
         
         .thinking-dots::after {
             content: '.';
@@ -73,113 +31,105 @@
             75% { content: '...'; }
             100% { content: ''; }
         }
-
-        @media (max-width: 768px) {
-            .app-layout {
-                grid-template-columns: 1fr;
-            }
-            .sidebar-visible { width: 280px !important; }
-            #welcome-message h1 { font-size: 2.0rem !important; }
-            #welcome-message h2 { font-size: 1.0rem !important; }
-        }
     </style>
 </head>
-<body class="bg-[#131314] text-[#e3e3e3] select-none">
+<body class="h-screen w-screen overflow-hidden text-[#e3e3e3] font-sans flex">
 
-    <div class="app-layout">
-        <!-- Sidebar Overlay -->
-        <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 md:hidden"></div>
 
-        <!-- Sidebar -->
-        <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
-            <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2">
-                    <span class="text-base">⚡️</span>
-                    <span id="sidebar-brand-text" class="text-[#00f2fe] font-semibold text-lg tracking-wide">OzoneAI Pro</span>
-                </div>
-                <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white md:hidden text-lg p-1">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-transform duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0 flex-shrink-0">
+        <div class="p-5 border-b border-gray-800/40 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-base">⚡️</span>
+                <span id="sidebar-brand-text" class="text-[#00f2fe] font-semibold text-lg tracking-wide">OzoneAI Pro</span>
             </div>
-
-            <div class="flex-1 py-4 flex flex-col gap-1 px-3 overflow-y-auto">
-                <button onclick="selectMenu('chat')" id="menu-chat" class="w-full bg-[#282a2c] text-white text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left">
-                    <i class="fa-regular fa-comment-dots text-[#00f2fe]"></i> Chat AI
-                </button>
-                <button onclick="selectMenu('photo')" id="menu-photo" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left">
-                    <i class="fa-regular fa-image text-purple-400"></i> Photo AI (Image Gen)
-                </button>
-                <button onclick="selectMenu('video')" id="menu-video" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left mb-2">
-                    <i class="fa-solid fa-clapperboard text-red-400"></i> Video Automation
-                </button>
-
-                <button onclick="promptForSecretMode()" id="menu-unrestricted" class="hidden w-full text-red-400 bg-red-950/20 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-red-900/40">
-                    <i id="lock-icon" class="fa-solid fa-lock text-red-500"></i> <span id="admin-text">Admin Panel Inactive</span>
-                </button>
-                
-                <div class="border-t border-gray-800/60 my-2 pt-2 flex flex-col flex-1">
-                    <div class="flex justify-between items-center px-3 mb-2">
-                        <span onclick="secretTapTrigger()" class="text-[11px] text-gray-500 font-medium uppercase tracking-wider cursor-pointer select-none">Recent Chats</span>
-                        <button onclick="clearAllHistory()" class="text-gray-600 hover:text-red-400 text-xs transition cursor-pointer">
-                            <i class="fa-regular fa-trash-can"></i>
-                        </button>
-                    </div>
-                    <div id="chat-history-list" class="flex flex-col gap-1 overflow-y-auto max-h-[220px]"></div>
-                </div>
-            </div>
+            <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white md:hidden text-lg p-1">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
 
-        <!-- Main Content Area -->
-        <div class="main-container">
-            <!-- Top Header -->
-            <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20">
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg cursor-pointer transition p-2 rounded-full hover:bg-gray-800/50">
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
-                    <div class="text-[#00f2fe] text-sm tracking-wide flex items-center gap-1.5 font-semibold">
-                        <span>⚡️</span>
-                        <span id="top-branding-text">ozoneai_chat</span>
-                    </div>
-                </div>
-                <button onclick="createNewChat()" class="text-xs bg-[#1e1f20] hover:bg-[#282a2c] text-teal-400 px-3 py-1.5 rounded-full border border-gray-800 font-medium transition cursor-pointer flex items-center gap-1.5">
-                    <i class="fa-solid fa-plus text-[10px]"></i> New Chat
-                </button>
-            </div>
+        <div class="flex-1 py-4 flex flex-col gap-1 px-3 overflow-y-auto">
+            <button onclick="selectMenu('chat')" id="menu-chat" class="w-full bg-[#282a2c] text-white text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left">
+                <i class="fa-regular fa-comment-dots text-[#00f2fe]"></i> Chat AI
+            </button>
+            <button onclick="selectMenu('photo')" id="menu-photo" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left">
+                <i class="fa-regular fa-image text-purple-400"></i> Photo AI (Image Gen)
+            </button>
+            <button onclick="selectMenu('video')" id="menu-video" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left mb-2">
+                <i class="fa-solid fa-clapperboard text-red-400"></i> Video Automation
+            </button>
 
-            <!-- Chat Space -->
-            <div id="chat-box" class="px-4 py-4 max-w-3xl w-full mx-auto"></div>
-
-            <!-- Image Preview Area -->
-            <div id="image-preview-container" class="hidden max-w-3xl w-full mx-auto px-4 mb-2">
-                <div class="relative inline-block bg-[#1e1f20] p-2 rounded-xl border border-gray-800">
-                    <img id="image-preview" src="" class="h-20 w-20 object-cover rounded-lg">
-                    <button onclick="clearSelectedImage()" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-500 shadow-lg">
-                        <i class="fa-solid fa-xmark"></i>
+            <button onclick="promptForSecretMode()" id="menu-unrestricted" class="hidden w-full text-red-400 bg-red-950/20 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-red-900/40">
+                <i id="lock-icon" class="fa-solid fa-lock text-red-500"></i> <span id="admin-text">Admin Panel Inactive</span>
+            </button>
+            
+            <div class="border-t border-gray-800/60 my-2 pt-2 flex flex-col flex-1 min-h-0">
+                <div class="flex justify-between items-center px-3 mb-2">
+                    <span onclick="secretTapTrigger()" class="text-[11px] text-gray-500 font-medium uppercase tracking-wider cursor-pointer select-none">Recent Chats</span>
+                    <button onclick="clearAllHistory()" class="text-gray-600 hover:text-red-400 text-xs transition cursor-pointer">
+                        <i class="fa-regular fa-trash-can"></i>
                     </button>
                 </div>
-            </div>
-
-            <!-- Input Form Field -->
-            <div class="p-4 bg-[#131314]">
-                <div class="max-w-3xl mx-auto flex items-center bg-[#1e1f20] rounded-full px-3 py-2 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg gap-2">
-                    
-                    <button onclick="triggerImageUpload()" class="text-gray-400 hover:text-teal-400 w-9 h-9 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
-                        <i class="fa-solid fa-plus text-base"></i>
-                    </button>
-                    <input type="file" id="image-input" accept="image/*" class="hidden" onchange="previewImage(event)">
-
-                    <input type="text" id="user-input" placeholder="Message OzoneAI..." class="flex-1 bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[15px] py-1.5 px-1 min-w-0" autocomplete="off">
-                    
-                    <button id="send-btn" onclick="sendMessage()" class="text-gray-400 hover:text-[#00f2fe] w-9 h-9 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
-                        <i class="fa-solid fa-paper-plane text-sm"></i>
-                    </button>
-                </div>
+                <div id="chat-history-list" class="flex flex-col gap-1 overflow-y-auto flex-1"></div>
             </div>
         </div>
     </div>
 
-    <!-- System Password Override Modal -->
+    <!-- Main Content App Area -->
+    <div class="flex-1 flex flex-col h-full min-w-0 bg-[#131314]">
+        
+        <!-- Top Header Bar -->
+        <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-gray-800/20 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg cursor-pointer transition p-2 rounded-full hover:bg-gray-800/50">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="text-[#00f2fe] text-sm tracking-wide flex items-center gap-1.5 font-semibold">
+                    <span>⚡️</span>
+                    <span id="top-branding-text">ozoneai_chat</span>
+                </div>
+            </div>
+            <button onclick="createNewChat()" class="text-xs bg-[#1e1f20] hover:bg-[#282a2c] text-teal-400 px-3 py-1.5 rounded-full border border-gray-800 font-medium transition cursor-pointer flex items-center gap-1.5">
+                <i class="fa-solid fa-plus text-[10px]"></i> New Chat
+            </button>
+        </div>
+
+        <!-- Chat Space Area -->
+        <div id="chat-box" class="w-full max-w-3xl mx-auto px-4 py-4 flex flex-col gap-4">
+            <!-- ዌልካም ሜሴጁ እዚህ ጃቫስክሪፕት ላይ በዲናሚክ ይገባል -->
+        </div>
+
+        <!-- Image Preview Space -->
+        <div id="image-preview-container" class="hidden w-full max-w-3xl mx-auto px-4 mb-2 flex-shrink-0">
+            <div class="relative inline-block bg-[#1e1f20] p-2 rounded-xl border border-gray-800">
+                <img id="image-preview" src="" class="h-20 w-20 object-cover rounded-lg">
+                <button onclick="clearSelectedImage()" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-500 shadow-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Input Form Field Area -->
+        <div class="p-4 bg-[#131314] flex-shrink-0">
+            <div class="max-w-3xl mx-auto flex items-center bg-[#1e1f20] rounded-full px-3 py-2 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg gap-2">
+                
+                <button onclick="triggerImageUpload()" class="text-gray-400 hover:text-teal-400 w-9 h-9 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
+                    <i class="fa-solid fa-plus text-base"></i>
+                </button>
+                <input type="file" id="image-input" accept="image/*" class="hidden" onchange="previewImage(event)">
+
+                <input type="text" id="user-input" placeholder="Message OzoneAI..." class="flex-1 bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[15px] py-1.5 px-1 min-w-0" autocomplete="off">
+                
+                <button id="send-btn" onclick="sendMessage()" class="text-gray-400 hover:text-[#00f2fe] w-9 h-9 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
+                    <i class="fa-solid fa-paper-plane text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Popup Modal -->
     <div id="password-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
         <div class="bg-[#1e1f20] border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
             <div class="w-12 h-12 bg-red-950/30 border border-red-900/40 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
@@ -196,7 +146,6 @@
     </div>
 
     <script>
-        /* 🔥 ትክክለኛው ሰርቨርህ እዚህ ገብቷል */
         var RENDER_BASE_URL = "https://ozoneai.onrender.com"; 
 
         var currentChatId = null;
@@ -220,12 +169,10 @@
             showWelcomeMessage();
             setupResponsiveSidebar();
             
-            if (window.visualViewport) {
-                window.visualViewport.addEventListener('resize', function() {
-                    var chatBox = document.getElementById("chat-box");
-                    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
-                });
-            }
+            window.addEventListener('resize', function() {
+                var chatBox = document.getElementById("chat-box");
+                if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+            });
         };
 
         function triggerImageUpload() {
@@ -360,11 +307,11 @@
             if (chatBox) {
                 var color = currentMode === 'unrestricted' ? '#ef4444' : '#00f2fe';
                 chatBox.innerHTML =
-                     '<div id="welcome-message">' +
-                        '<h1 style="color: ' + color + '; font-weight: bold; margin-bottom: 10px; font-size: 2.3rem; display: flex; align-items: center; justify-content: center; gap: 10px;">' +
+                     '<div id="welcome-message" class="flex flex-col items-center justify-center text-center my-auto py-10">' +
+                        '<h1 class="font-bold mb-2 text-3xl md:text-4xl flex items-center justify-center gap-3" style="color: ' + color + ';">' +
                             '<span>⚡️</span><span>' + title + '</span>' +
                         '</h1>' +
-                        '<h2 style="color: rgba(227, 227, 227, 0.8); font-weight: 500; font-size: 1.1rem; margin: 0;">' + subtitle + '</h2>' +
+                        '<h2 class="text-gray-400 font-medium text-base md:text-lg">' + subtitle + '</h2>' +
                     '</div>';
             }
         }
@@ -468,9 +415,7 @@
                 var sessions = JSON.parse(savedChats);
                 
                 var filteredSessions = sessions.filter(function(session) {
-                    if (session.mode === 'unrestricted' && !isAdminUnlocked) {
-                        return false; 
-                    }
+                    if (session.mode === 'unrestricted' && !isAdminUnlocked) return false; 
                     return true; 
                 });
 
@@ -527,14 +472,14 @@
                     if (msg.role === "user") {
                         var imgHtml = msg.image ? '<img src="' + msg.image + '" class="mt-2 rounded-xl max-w-[200px] border border-gray-700" />' : '';
                         chatBox.innerHTML += 
-                            '<div style="display: flex; flex-direction: column; align-items: flex-end; width: 100%; padding: 4px 0;">' +
+                            '<div class="flex flex-col items-end w-full py-1">' +
                                 '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + msg.text + '</div>' +
                                 imgHtml +
                             '</div>';
                     } else {
                         var imgHtml = msg.image ? '<img src="' + msg.image + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-md" />' : '';
                         chatBox.innerHTML += 
-                            '<div style="display: flex; justify-content: flex-start; width: 100%; padding: 4px 0; padding-left: 4px;">' +
+                            '<div class="flex justify-start w-full py-1 pl-1">' +
                                 '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + msg.text + imgHtml + '</div>' +
                             '</div>';
                     }
@@ -592,7 +537,7 @@
             var userImgHtml = selectedImageBase64 ? '<img src="' + selectedImageBase64 + '" class="mt-2 rounded-xl max-w-[200px] border border-gray-700" />' : '';
             
             chatBox.innerHTML +=
-                '<div style="display: flex; flex-direction: column; align-items: flex-end; width: 100%; padding: 4px 0;">' +
+                '<div class="flex flex-col items-end w-full py-1">' +
                     '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + (message || "Sent an image") + '</div>' +
                     userImgHtml +
                 '</div>';
@@ -630,7 +575,7 @@
                 
                 var imgHtml = data.image ? '<img src="' + data.image + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-lg" />' : '';
                 chatBox.innerHTML += 
-                    '<div style="display: flex; justify-content: flex-start; width: 100%; padding: 4px 0; padding-left: 4px;">' +
+                    '<div class="flex justify-start w-full py-1 pl-1">' +
                         '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + data.reply + imgHtml + '</div>' +
                     '</div>';
                 saveMessageToHistory("ai", data.reply, data.image);
