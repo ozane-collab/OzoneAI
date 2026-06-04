@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import requests
+import google.generativeai as genai
 import os
 
 app = Flask(__name__)
@@ -10,6 +10,9 @@ SECRET_PASSWORD = "E12N21OSK"
 
 # 🔑 Render Environment Variables ላይ ያስገባኸውን ቁልፍ ያነባል
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "YOUR_ACTUAL_GEMINI_API_KEY_HERE")
+
+# ⚙️ የጉግልን ይፋዊ ቤተ-መጻሕፍት በቁልፍህ ማገናኘት
+genai.configure(api_key=GEMINI_API_KEY)
 
 # 1️⃣ የመደበኛው ቻት መመሪያ
 NORMAL_SYSTEM_PROMPT = (
@@ -51,55 +54,37 @@ def chat_endpoint():
     system_instructions = UNRESTRICTED_SYSTEM_PROMPT if is_unrestricted_request else NORMAL_SYSTEM_PROMPT
 
     try:
-        user_parts = []
+        # 🛠️ በጉግል መመሪያ መሠረት ሞዴሉን በይፋዊው መንገድ መፍጠር
+        # በምስል 1000026517.jpg ላይ በተጠቀሰው መሠረት የተረጋጋውን gemini-1.5-flash ስም እንጠቀማለን
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            system_instruction=system_instructions,
+            generation_config={"temperature": 0.9 if is_unrestricted_request else 0.4}
+        )
+
+        contents = []
+        # ፋይል (ምስል) ካለ ወደ ማከማቻው ማካተት
         if file_data and "data" in file_data and "mime_type" in file_data:
-            user_parts.append({
-                "inline_data": {
-                    "mime_type": file_data["mime_type"],
-                    "data": file_data["data"]
-                }
+            import base64
+            contents.append({
+                "mime_type": file_data["mime_type"],
+                "data": base64.b64decode(file_data["data"])
             })
             
-        user_parts.append({"text": user_message})
+        contents.append(user_message)
 
-        # 🔗 1. በምስሉ መመሪያ መሠረት ወደ v1beta Endpoint እንመልሰዋለን
-        gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
-        
-        # 🛠️ 2. በ image_49.png መመሪያ መሠረት ለ v1beta ትክክለኛው ቃል system_instruction (በስር ሰረዝ) ነው!
-        payload = {
-            "contents": [
-                {
-                    "role": "user",
-                    "parts": user_parts
-                }
-            ],
-            "system_instruction": {
-                "parts": [
-                    {"text": system_instructions}
-                ]
-            },
-            "generationConfig": {
-                "temperature": 0.9 if is_unrestricted_request else 0.4
-            }
-        }
+        # ለጉግል SDK ጥሪ ማድረግ
+        response = model.generate_content(contents)
+        ai_reply = response.text
 
-        response = requests.post(gemini_url, json=payload, headers={"Content-Type": "application/json"})
-        response_data = response.json()
-
-        if "candidates" in response_data and len(response_data["candidates"]) > 0:
-            ai_reply = response_data["candidates"][0]["content"]["parts"][0]["text"]
-        else:
-            if "error" in response_data:
-                error_msg = response_data["error"].get("message", "Unknown Google API Error")
-                ai_reply = f"⚠️ Gemini API Error: {error_msg}"
-            else:
-                if not is_unrestricted_request:
-                    if any(ord(char) > 127 for char in user_message): 
-                        ai_reply = "እባክህ ይቅርታ አድርግልኝ፣ ይህንን ጥያቄ መመለስ አልችልም ወይም ይህንን መስራት አልችልም።"
-                    else:
-                        ai_reply = "I am sorry, but I cannot fulfill this request as it violates safety guidelines."
+        if not ai_reply:
+            if not is_unrestricted_request:
+                if any(ord(char) > 127 for char in user_message): 
+                    ai_reply = "እባክህ ይቅርታ አድርግልኝ፣ ይህንን ጥያቄ መመለስ አልችልም ወይም ይህንን መስራት አልችልም።"
                 else:
-                    ai_reply = "⚠️ Safety Block Triggered even in Unrestricted mode."
+                    ai_reply = "I am sorry, but I cannot fulfill this request as it violates safety guidelines."
+            else:
+                ai_reply = "⚠️ Safety Block Triggered even in Unrestricted mode."
 
         if chat_id:
             if chat_id not in chat_sessions_db:
