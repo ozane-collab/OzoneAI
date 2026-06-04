@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # 🔐 የ Groq API ቁልፍህን እዚህ አስገባ (ወይም በምስጢር Render ላይ እሰረው)
-GROQ_API_KEY = "እዚህ_ጋር_የGroq_API_ቁልፍህን_አስገባ"
+GROQ_API_KEY = "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"
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
 @app.route("/", methods=["GET", "HEAD"])
