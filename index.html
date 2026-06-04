@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>OzoneAI Pro</title>
+    <title>⚡️ OzoneAI Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -22,7 +22,7 @@
             display: grid;
             grid-template-columns: auto 1fr;
             height: 100vh;
-            height: 100 dvh;
+            height: 100dvh;
             width: 100%;
             overflow: hidden;
         }
@@ -98,13 +98,13 @@
 
             <div class="flex-1 py-4 flex flex-col gap-1 px-3 overflow-y-auto">
                 <button onclick="selectMenu('chat')" id="menu-chat" class="w-full bg-[#282a2c] text-white text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left">
-                    <i class="fa-regular fa-comment-dots text-[#00f2fe]"></i> Chat AI
+                    <i class="fa-regular fa-comment-dots text-[#00f2fe]"></i> ⚡️ Chat AI
                 </button>
                 <button onclick="selectMenu('photo')" id="menu-photo" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left">
-                    <i class="fa-regular fa-image text-purple-400"></i> Photo AI (Image Gen)
+                    <i class="fa-regular fa-image text-purple-400"></i> ⚡️ Photo AI
                 </button>
                 <button onclick="selectMenu('video')" id="menu-video" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left mb-2">
-                    <i class="fa-solid fa-clapperboard text-red-400"></i> Video Automation
+                    <i class="fa-solid fa-clapperboard text-red-400"></i> ⚡️ Video Automation
                 </button>
 
                 <button onclick="promptForSecretMode()" id="menu-unrestricted" class="hidden w-full text-red-400 bg-red-950/20 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-red-900/40">
@@ -552,13 +552,13 @@
             var loadingId = "loading-" + Date.now();
             chatBox.innerHTML += 
                 '<div id="' + loadingId + '" class="flex justify-start w-full py-1">' +
-                    '<div class="text-gray-400 text-xl font-bold tracking-widest thinking-dots"></div>' +
+                    '<div class="text-gray-400 text-xl font-bold tracking-widest thinking-dots">⚡️</div>' +
                 '</div>';
             setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
 
             var lowerMsg = message.toLowerCase();
             
-            /* 🛠️ ቋሚና አስተማማኝ የፎቶ መፈለጊያ (ከAPI ነፃ የተደረገ) */
+            /* 🛠️ እጅግ ፈጣን እና አስተማማኝ የፎቶ መፈለጊያ መስመር */
             if (currentMode === 'photo' || lowerMsg.includes("photo") || lowerMsg.includes("image") || lowerMsg.includes("picture") || lowerMsg.includes("ፎቶ") || lowerMsg.includes("ስራሊኝ") || lowerMsg.includes("አምጣልኝ")) {
                 
                 var cleanPrompt = message.replace(/(photo|image|generate|picture|create|of|ፎቶ|ስራ|ስራሊኝ|አምጣልኝ)/gi, "").trim();
@@ -570,7 +570,7 @@
                     var loadingEl = document.getElementById(loadingId);
                     if (loadingEl) loadingEl.remove();
                     
-                    var replyText = "✨ Here is your generated image:";
+                    var replyText = "⚡️ Here is your generated image:";
                     chatBox.innerHTML += 
                         '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
                             '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed">' +
@@ -583,24 +583,8 @@
                 return;
             }
 
-            /* 🛠️ እጅግ ዘመናዊና አስተማማኝ የቋንቋ መቆጣጠሪያ ፕሮምፕት (Advanced Multi-Language Prompt Control) */
-            var isAmharic = /[\u1200-\u137F]/.test(message) || 
-                            lowerMsg.includes("endet") || 
-                            lowerMsg.includes("selam") || 
-                            lowerMsg.includes("አማርኛ") || 
-                            lowerMsg.includes("salam") || 
-                            lowerMsg.includes("na") || 
-                            lowerMsg.includes("nech") || 
-                            lowerMsg.includes("ari f") || 
-                            lowerMsg.includes("arif") || 
-                            lowerMsg.includes("dnw");
-
-            var systemPromptInstructions = "You are a multilingual helpful AI assistant. Detect the user's input language. ";
-            if (isAmharic) {
-                systemPromptInstructions += "CRITICAL OVERRIDE: The user is writing in Amharic (or Latin Amharic). You MUST respond ONLY in beautifully structured Amharic language using the Ethiopic (Ge'ez) script. Do NOT respond in English, German, or any other language.";
-            } else {
-                systemPromptInstructions += "The user is writing in English. Respond natively, clearly, and directly in English only.";
-            }
+            /* 🛠️ ስማርት የቋንቋ መቆጣጠሪያ ፕሮምፕት (ይህ ሲስተም ቋንቋውን በራሱ ለይቶ ያውቃል) */
+            var systemPromptInstructions = "You are OzoneAI, a highly intelligent multilingual assistant. Detect the user's language automatically. If they write in Amharic (whether using Ethiopic letters or Latin/Fidel script like 'selam', 'endet', 'arif', 'dnw'), you MUST answer natively in clear Amharic using Ge'ez script. If they write in English, respond perfectly in English.";
 
             var endpoint = RENDER_BASE_URL + "/chat";
             fetch(endpoint, {
