@@ -7,46 +7,49 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* 🔥 የሞባይል ኪቦርድ ሲመጣ ፍጹም እንዳይበላሽ የሚያደርግ ዋናው የ CSS ማስተካከያ */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
+            /* dvh ማለት Dynamic Viewport Height ማለት ሲሆን ኪቦርዱ ሲመጣ አብሮ መጠኑን ያስተካክላል */
+            height: 100vh;
+            height: 100dvh; 
             background-color: #131314;
             color: #e3e3e3;
             font-family: sans-serif;
             overflow: hidden;
-            /* በሞባይል ስክሪን ላይ ወደ ታች ጎትቶ Refresh የሚያደርገውን መከላከል */
-            overscroll-behavior: none; 
+            overscroll-behavior: none;
         }
         
-        /* የሞባይል ኪቦርድ ሲመጣ በጃቫስክሪፕት ቁመቱ በቅጽበት የሚስተካከል ዋና Wrapper */
-        #app-wrapper {
-            display: flex;
+        /* ሙሉ ገጹን በ Grid መዋቅር መያዝ */
+        .app-layout {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            height: 100vh;
+            height: 100dvh;
             width: 100%;
             overflow: hidden;
-            position: fixed;
-            top: 0;
-            left: 0;
         }
         
+        /* ቻቱ እና ኢንፑቱ የሚቀመጡበት ዋና ክፍል */
         .main-container {
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            height: 100%;
-            width: 100%;
-            flex: 1;
+            display: grid;
+            grid-template-rows: auto 1fr auto; /* Header, Chat Space, Input Form */
+            height: 100vh;
+            height: 100dvh;
             min-height: 0;
             overflow: hidden;
+            background-color: #131314;
         }
 
+        /* የቻት መጻፊያ ቦታው ብቻ Scroll እንዲያደርግ መፍቀድ */
         #chat-box {
+            overflow-y: auto !important;
             display: flex !important;
             flex-direction: column !important;
-            flex: 1 !important;
-            overflow-y: auto !important;
             min-height: 0 !important;
-            padding-bottom: 10px;
+            height: 100% !important;
             -webkit-overflow-scrolling: touch;
         }
 
@@ -57,9 +60,7 @@
             justify-content: center !important;
             align-items: center !important;
             text-align: center !important;
-            width: 100% !important;
             padding: 20px !important;
-            box-sizing: border-box !important;
         }
 
         .sidebar-hidden { transform: translateX(-100%); opacity: 0; pointer-events: none; }
@@ -78,16 +79,19 @@
         }
 
         @media (max-width: 768px) {
+            .app-layout {
+                grid-template-columns: 1fr; /* ስልክ ላይ ሳይድባሩን ከ Grid ማውጣት */
+            }
             .sidebar-visible { width: 280px !important; }
             #welcome-message h1 { font-size: 2.0rem !important; }
             #welcome-message h2 { font-size: 1.0rem !important; }
         }
     </style>
 </head>
-<body class="bg-[#131314] text-[#e3e3e3] select-none relative">
+<body class="bg-[#131314] text-[#e3e3e3] select-none">
 
-    <div id="app-wrapper">
-        <!-- Sidebar Overlay -->
+    <div class="app-layout">
+        <!-- Sidebar Overlay (ለሞባይል ብቻ) -->
         <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
 
         <!-- Sidebar -->
@@ -130,9 +134,9 @@
         </div>
 
         <!-- Main Content Area -->
-        <div class="main-container bg-[#131314]">
+        <div class="main-container">
             <!-- Top Header -->
-            <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0">
+            <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20">
                 <div class="flex items-center gap-3">
                     <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg cursor-pointer transition p-2 rounded-full hover:bg-gray-800/50">
                         <i class="fa-solid fa-bars"></i>
@@ -148,7 +152,7 @@
             </div>
 
             <!-- Chat Space -->
-            <div id="chat-box" class="px-4 py-4 max-w-3xl w-full mx-auto flex-1 overflow-y-auto"></div>
+            <div id="chat-box" class="px-4 py-4 max-w-3xl w-full mx-auto"></div>
 
             <!-- Image Preview Area -->
             <div id="image-preview-container" class="hidden max-w-3xl w-full mx-auto px-4 mb-2">
@@ -161,7 +165,7 @@
             </div>
 
             <!-- Input Form Field -->
-            <div class="p-4 bg-[#131314] flex-shrink-0">
+            <div class="p-4 bg-[#131314]">
                 <div class="max-w-3xl mx-auto flex items-center bg-[#1e1f20] rounded-full px-3 py-2 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg gap-2">
                     
                     <button onclick="triggerImageUpload()" class="text-gray-400 hover:text-teal-400 w-9 h-9 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
@@ -205,26 +209,6 @@
         var isAdminUnlocked = false; 
         var selectedImageBase64 = null;
 
-        // 🔥 የሞባይል ኪቦርድ ሲከፈት ቁመቱን በትክክል የመለኪያ ፈንክሽን
-        function adjustMobileLayout() {
-            var wrapper = document.getElementById("app-wrapper");
-            if (!wrapper) return;
-            
-            if (window.visualViewport) {
-                var height = window.visualViewport.height;
-                wrapper.style.height = height + "px";
-                
-                // ኪቦርዱ ሲከፈት ገጹ ወደታች እንዲያሳይ ማሸብለል
-                setTimeout(function() {
-                    window.scrollTo(0, 0);
-                    var chatBox = document.getElementById("chat-box");
-                    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
-                }, 50);
-            } else {
-                wrapper.style.height = "100vh";
-            }
-        }
-
         window.onload = function() {
             var inputElement = document.getElementById("user-input");
             if (inputElement) {
@@ -239,13 +223,12 @@
             showWelcomeMessage();
             setupResponsiveSidebar();
             
-            // የሞባይል አቀማመጥን መጀመሪያ ላይ ማስተካከል
-            adjustMobileLayout();
-            
-            // 🔥 ስልክ ላይ ኪቦርድ ሲመጣ ወይም ስክሪን ሲዞር ቁመቱን በቅጽበት ይለካል
+            // ኪቦርዱ ሲከፈት ቻት ቦክሱን ወደ ታች በራስ-ሰር እንዲያሸበልል ማድረግ
             if (window.visualViewport) {
-                window.visualViewport.addEventListener('resize', adjustMobileLayout);
-                window.visualViewport.addEventListener('scroll', adjustMobileLayout);
+                window.visualViewport.addEventListener('resize', function() {
+                    var chatBox = document.getElementById("chat-box");
+                    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+                });
             }
         };
 
@@ -585,16 +568,16 @@
             }
         }
 
-        // 🔥 የ Render ሰርቨር ተኝቶ ከሆነ 3 ጊዜ በራሱ ተስፋ ሳይቆርጥ እንዲሞክር የተደረገ የ Fetch ፈንክሽን
-        function fetchWithRetry(url, options, retries = 3, delay = 3000) {
+        // 🔥 የ Render መተኛት ችግርን ለመፍታት ለ 45 ሰከንድ ድረስ ደጋግሞ የሚሞክር Fetch
+        function fetchWithLongRetry(url, options, retries = 5, delay = 6000) {
             return fetch(url, options)
                 .then(res => {
                     if (!res.ok) {
                         if (retries > 0) {
                             return new Promise(resolve => setTimeout(resolve, delay))
-                                .then(() => fetchWithRetry(url, options, retries - 1, delay));
+                                .then(() => fetchWithLongRetry(url, options, retries - 1, delay));
                         }
-                        throw new Error("Server error after retries");
+                        throw new Error("Server error");
                     }
                     return res.json();
                 });
@@ -635,8 +618,7 @@
 
             var endpoint = RENDER_BASE_URL + "/chat";
             
-            // fetch With Retry በመጠቀም ኮኔክሽኑ እንዳይቋረጥ አድርገናል
-            fetchWithRetry(endpoint, {
+            fetchWithLongRetry(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -664,7 +646,7 @@
                 if (loadingEl) loadingEl.remove();
                 chatBox.innerHTML += 
                     '<div class="flex justify-start w-full pl-1 py-1">' +
-                        '<div class="bg-red-950/20 text-red-400/90 text-xs rounded-xl px-4 py-2 border border-red-900/30">⚠️ Connection failed or Server is waking up. Please try again in a few seconds.</div>' +
+                        '<div class="bg-red-950/20 text-red-400/90 text-xs rounded-xl px-4 py-2 border border-red-900/30">⚠️ Server is waking up or connection failed. Please try sending your message once more.</div>' +
                     '</div>';
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
