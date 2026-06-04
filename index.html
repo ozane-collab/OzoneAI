@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* ኪቦርድ ሲመጣ ገጹ እንዳይበላሽ ቋሚ ቁመት መስጠት */
         html, body {
             margin: 0;
             padding: 0;
@@ -19,7 +20,6 @@
             overflow: hidden;
         }
         
-        /* ለሞባይል ሙሉ ስክሪን እንዲሆን Layout ማስተካከያ */
         .app-wrapper {
             display: flex;
             height: 100vh;
@@ -28,16 +28,19 @@
             overflow: hidden;
         }
         
+        /* ኪቦርድ ሲከፈት ጽሕፈቶቹ እንዲታዩና ወደላይ እንዳይገፉ ፊክስ የተደረገ container */
         .main-container {
             display: flex;
             flex-direction: column;
+            position: relative;
             height: 100%;
             width: 100%;
             flex: 1;
             min-height: 0;
-            position: relative;
+            overflow: hidden;
         }
 
+        /* የቻት ቦታው ራሱን ችሎ እንዲሸበለል (Scroll እንዲያደርግ) */
         #chat-box {
             display: flex !important;
             flex-direction: column !important;
@@ -45,6 +48,7 @@
             overflow-y: auto !important;
             min-height: 0 !important;
             padding-bottom: 20px;
+            -webkit-overflow-scrolling: touch;
         }
 
         #welcome-message {
@@ -127,7 +131,7 @@
         </div>
 
         <!-- Main Content Area -->
-        <div class="main-container bg-[#131314] overflow-hidden">
+        <div class="main-container bg-[#131314]">
             <!-- Top Header -->
             <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0">
                 <div class="flex items-center gap-3">
@@ -147,7 +151,7 @@
             <!-- Chat Space -->
             <div id="chat-box" class="px-4 py-4 max-w-3xl w-full mx-auto flex-1 overflow-y-auto"></div>
 
-            <!-- የተመረጠ ፎቶ ማሳያ Preview Area -->
+            <!-- Image Preview Area -->
             <div id="image-preview-container" class="hidden max-w-3xl w-full mx-auto px-4 mb-2">
                 <div class="relative inline-block bg-[#1e1f20] p-2 rounded-xl border border-gray-800">
                     <img id="image-preview" src="" class="h-20 w-20 object-cover rounded-lg">
@@ -157,15 +161,13 @@
                 </div>
             </div>
 
-            <!-- Input Form Field (ለሞባይል ኪቦርድ የተስተካከለ) -->
+            <!-- Input Form Field -->
             <div class="p-4 bg-[#131314] flex-shrink-0 pb-safe">
                 <div class="max-w-3xl mx-auto flex items-center bg-[#1e1f20] rounded-full px-3 py-2 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg gap-2">
                     
-                    <!-- የፕላስ (+) ምልክት ቁልፍ ለጋለሪ -->
                     <button onclick="triggerImageUpload()" class="text-gray-400 hover:text-teal-400 w-9 h-9 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0">
                         <i class="fa-solid fa-plus text-base"></i>
                     </button>
-                    <!-- የተደበቀ የፋይል መምረጫ -->
                     <input type="file" id="image-input" accept="image/*" class="hidden" onchange="previewImage(event)">
 
                     <input type="text" id="user-input" placeholder="Message OzoneAI..." class="flex-1 bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[15px] py-1.5 px-1 min-w-0" autocomplete="off">
@@ -202,7 +204,7 @@
         var inputAuthToken = ""; 
         var secretTapCount = 0;
         var isAdminUnlocked = false; 
-        var selectedImageBase64 = null; // የፎቶውን ዳታ ለመያዝ
+        var selectedImageBase64 = null;
 
         window.onload = function() {
             var inputElement = document.getElementById("user-input");
@@ -217,6 +219,14 @@
             loadChatHistory();
             showWelcomeMessage();
             setupResponsiveSidebar();
+            
+            // ኪቦርድ ሲከፈት ገጹን በራስ-ሰር ወደታች Scroll የሚያደርግ ማስተካከያ
+            window.visualViewport.addEventListener('resize', function() {
+                var chatBox = document.getElementById("chat-box");
+                if (chatBox) {
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            });
         };
 
         function triggerImageUpload() {
@@ -233,7 +243,6 @@
                 document.getElementById("image-preview").src = selectedImageBase64;
                 document.getElementById("image-preview-container").classList.remove("hidden");
                 
-                // ፎቶ ሲመረጥ ቻቱን ወደታች ዝቅ እንዲያደርግ
                 var chatBox = document.getElementById("chat-box");
                 chatBox.scrollTop = chatBox.scrollHeight;
             };
@@ -567,7 +576,6 @@
             var welcome = document.getElementById("welcome-message");
             if (welcome) welcome.remove();
             
-            // የተጠቃሚውን ፎቶ በቻት ላይ ማሳያ
             var userImgHtml = selectedImageBase64 ? '<img src="' + selectedImageBase64 + '" class="mt-2 rounded-xl max-w-[200px] border border-gray-700" />' : '';
             
             chatBox.innerHTML +=
@@ -578,8 +586,8 @@
             
             saveMessageToHistory("user", message || "Sent an image", selectedImageBase64);
             
-            var sendingImage = selectedImageBase64; // ለጊዜው ዳታውን መያዝ
-            clearSelectedImage(); // ቦታውን ማጽዳት
+            var sendingImage = selectedImageBase64; 
+            clearSelectedImage(); 
             inputField.value = "";
             chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -597,7 +605,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     message: message,
-                    image: sendingImage, // ፎቶው እዚህ ይላካል (ካለ)
+                    image: sendingImage, 
                     password: inputAuthToken,
                     mode: currentMode,
                     chat_id: currentChatId
