@@ -157,13 +157,14 @@
     </div>
 
     <script>
-        var RENDER_BASE_URL = "https://ozoneai.onrender.com"; 
+        // 🛠️ ወሳኙ ማስተካከያ፦ በምስል 1000026529.jpg ላይ በታየው መሠረት ያንተን ትክክለኛ የ Render ሊንክ እዚህ ተክቼዋለሁ!
+        var RENDER_BASE_URL = "https://ozone-ai-vbe6.onrender.com"; 
 
         var currentChatId = null;
         var currentMode = 'chat'; 
         var inputAuthToken = ""; 
         var secretTapCount = 0;
-        var isAdminUnlocked = false; // Admin ተከፍቷል ወይስ አልተከፈተም የሚቆጣጠር
+        var isAdminUnlocked = false; 
 
         window.onload = function() {
             var inputElement = document.getElementById("user-input");
@@ -219,7 +220,6 @@
 
         function promptForSecretMode() {
             if (isAdminUnlocked && currentMode !== 'unrestricted') {
-                // ቀድሞውኑ ፓስዋርድ በትክክል ከተሞላ ቀጥታ ይክፈተው
                 selectMenu('unrestricted');
                 return;
             }
@@ -246,18 +246,13 @@
             var pass = input.value.trim();
             if (pass === "E12N21OSK") {
                 inputAuthToken = pass;
-                isAdminUnlocked = true; // አድሚን መብቱን አገኘ
+                isAdminUnlocked = true; 
                 closePasswordModal();
                 
-                // UI ማስተካከያ (መቆለፊያውን መክፈት)
                 var lockIcon = document.getElementById("lock-icon");
                 var adminText = document.getElementById("admin-text");
-                if (lockIcon) {
-                    lockIcon.className = "fa-solid fa-lock-open text-green-400";
-                }
-                if (adminText) {
-                    adminText.innerText = "Admin Panel Active";
-                }
+                if (lockIcon) lockIcon.className = "fa-solid fa-lock-open text-green-400";
+                if (adminText) adminText.innerText = "Admin Panel Active";
                 
                 selectMenu('unrestricted');
             } else {
@@ -273,11 +268,11 @@
 
             if (currentMode === 'photo') {
                 title = "Ozone Photo AI";
-                subtitle = "Generate & edit stunning images.";
+                subtitle = "Generate & edit stunning images. (Routed via central model)";
                 placeholder = "Describe the image you want to generate...";
             } else if (currentMode === 'video') {
                 title = "Ozone Video Automation";
-                subtitle = "Create & structure video scripts.";
+                subtitle = "Create & structure video scripts. (Routed via central model)";
                 placeholder = "Enter video topic or concept...";
             } else if (currentMode === 'unrestricted') {
                 title = "OzoneAI [UNRESTRICTED]";
@@ -295,7 +290,7 @@
                      '<div id="welcome-message" class="flex-1 flex flex-col justify-center items-center text-center w-full p-5">' +
                         '<h1 style="color: ' + color + '; font-weight: bold; margin-bottom: 10px; font-size: 2.3rem; display: flex; align-items: center; justify-content: center; gap: 10px;">' +
                             '<span>⚡️</span><span>' + title + '</span>' +
-                        '</h1>' +
+                        </h1>' +
                         '<h2 style="color: rgba(227, 227, 227, 0.8); font-weight: 500; font-size: 1.3rem; margin: 0;">' + subtitle + '</h2>' +
                     '</div>';
             }
@@ -319,10 +314,9 @@
         function selectMenu(menuType) {
             var brandText = document.getElementById("sidebar-brand-text");
             
-            // ከ Unrestricted Mode ሲወጣ አድሚን ይቆለፋል፣ ሂስትሪውም ወዲያው ይደበቃል
             if (menuType !== 'unrestricted') {
                 inputAuthToken = ""; 
-                isAdminUnlocked = false; // መብቱን መዝጋት
+                isAdminUnlocked = false; 
                 if (brandText) {
                     brandText.innerText = "OzoneAI Pro";
                     brandText.className = "text-[#00f2fe] font-semibold text-lg tracking-wide";
@@ -390,7 +384,6 @@
             loadChatHistory();
         }
 
-        // 🔒 የ Unrestricted ሂስትሪዎችን የሚደብቀው ዋናው ሎጂክ እዚህ አለ
         function loadChatHistory() {
             var historyList = document.getElementById("chat-history-list");
             if (!historyList) return;
@@ -400,12 +393,11 @@
             if (savedChats) {
                 var sessions = JSON.parse(savedChats);
                 
-                // ⚡️ የማጣሪያ ሎጂክ፦ Admin ካልተከፈተ የ UNRESTRICTED ሂስትሪዎችን አሳይ
                 var filteredSessions = sessions.filter(function(session) {
                     if (session.mode === 'unrestricted' && !isAdminUnlocked) {
-                        return false; // ይደበቅ
+                        return false; 
                     }
-                    return true; // ሌሎች ይታዩ
+                    return true; 
                 });
 
                 if (filteredSessions.length > 0) {
@@ -443,7 +435,6 @@
             if (activeSession) {
                 currentMode = activeSession.mode;
                 
-                // ሂስትሪው ከተጫነ በኋላ አድሚን ሁነታውን ክፍት ያድርገው
                 if (currentMode === 'unrestricted') {
                     isAdminUnlocked = true;
                     var lockIcon = document.getElementById("lock-icon");
@@ -524,17 +515,17 @@
                 '</div>';
             chatBox.scrollTop = chatBox.scrollHeight;
 
+            // 🛠️ ማስተካከያ፦ Backend ላይ አንድ የቻት Endpoint ብቻ ስላለን ሁለቱንም ወደ መደበኛው ቻት እንዲሄዱ አድርገናል።
             var endpoint = RENDER_BASE_URL + "/chat";
-            if (currentMode === 'photo') endpoint = RENDER_BASE_URL + "/photo";
-            if (currentMode === 'video') endpoint = RENDER_BASE_URL + "/video";
-            if (currentMode === 'unrestricted') endpoint = RENDER_BASE_URL + "/chat";
             
             fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     message: message,
-                    password: inputAuthToken 
+                    password: inputAuthToken,
+                    mode: currentMode,
+                    chat_id: currentChatId
                 })
             })
             .then(res => {
