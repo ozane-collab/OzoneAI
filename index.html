@@ -150,10 +150,8 @@
 <body class="bg-[#131314] text-[#e3e3e3]">
 
     <div class="app-layout">
-        <!-- Sidebar Overlay -->
         <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
 
-        <!-- Sidebar -->
         <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
             <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
@@ -192,9 +190,7 @@
             </div>
         </div>
 
-        <!-- Main Content Area -->
         <div class="main-container">
-            <!-- Top Header -->
             <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0 relative z-20">
                 <div class="flex items-center gap-1">
                     <button type="button" onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-xl cursor-pointer transition p-3 rounded-full hover:bg-gray-800/50 block relative z-30" style="min-width: 44px; min-height: 44px;">
@@ -210,10 +206,8 @@
                 </button>
             </div>
 
-            <!-- Chat Space -->
             <div id="chat-box" class="chat-scroll-area max-w-3xl w-full mx-auto relative z-10"></div>
 
-            <!-- Image Preview Area -->
             <div id="image-preview-container" class="hidden max-w-3xl w-full mx-auto px-4 mb-2 flex-shrink-0 relative z-20">
                 <div class="relative inline-block bg-[#1e1f20] p-2 rounded-xl border border-gray-800">
                     <img id="image-preview" src="" class="h-20 w-20 object-cover rounded-lg">
@@ -223,22 +217,18 @@
                 </div>
             </div>
 
-            <!-- የታችኛው የመልዕክት መላኪያ ፎርም (የላኪው ችግር ሙሉ በሙሉ የተስተካከለበት) -->
             <div class="p-4 bg-[#131314] flex-shrink-0 relative z-30 border-t border-gray-900/20 pb-safe">
                 <div class="max-w-3xl mx-auto">
                     <div class="flex items-center bg-[#1e1f20] rounded-[24px] px-3 py-1.5 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg w-full relative">
                         
-                        <!-- Plus Button -->
                         <button type="button" onclick="triggerImageUpload()" class="text-gray-400 hover:text-teal-400 w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0 relative z-40">
                             <i class="fa-solid fa-plus text-lg"></i>
                         </button>
                         <input type="file" id="image-input" accept="image/*" class="hidden" onchange="previewImage(event)">
 
-                        <!-- Text Input -->
-                        <input type="text" id="user-input" placeholder="Message OzoneAI..." class="block w-full bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[16px] py-2 pl-2 pr-12 relative z-10" autocomplete="off">
+                        <input type="text" id="user-input" placeholder="Message OzoneAI..." class="block w-full bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[16px] py-2 pl-2 pr-14 relative z-10" autocomplete="off">
                         
-                        <!-- Send Button (ክሊክ በትክክል እንዲቀበል የተስተካከለ) -->
-                        <button type="button" id="send-btn" onclick="sendMessage()" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#00f2fe] w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 z-50">
+                        <button type="button" id="send-btn" onclick="sendMessage(event)" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#00f2fe] w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 z-50" style="pointer-events: auto !important;">
                             <i class="fa-solid fa-paper-plane text-base"></i>
                         </button>
                         
@@ -248,7 +238,6 @@
         </div>
     </div>
 
-    <!-- Password Modal -->
     <div id="password-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
         <div class="bg-[#1e1f20] border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
             <div class="w-12 h-12 bg-red-950/30 border border-red-900/40 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
@@ -277,12 +266,12 @@
         window.onload = function() {
             var inputElement = document.getElementById("user-input");
             if (inputElement) {
-                inputElement.onkeydown = function(event) {
-                    if (event.keyCode === 13 || event.key === "Enter") {
+                inputElement.addEventListener("keydown", function(event) {
+                    if (event.key === "Enter") {
                         event.preventDefault();
-                        sendMessage();
+                        sendMessage(event);
                     }
-                };
+                });
             }
 
             loadChatHistory();
@@ -362,8 +351,7 @@
         }
 
         function formatAIResponse(text) {
-            var codeBlockRegex = /```(\w*)\n([\s\S]*?)
-```/g;
+            var codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
             var match;
             var lastIndex = 0;
             var htmlOutput = "";
@@ -707,7 +695,12 @@
             }
         }
 
-        async function sendMessage() {
+        async function sendMessage(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
             var inputField = document.getElementById("user-input");
             var chatBox = document.getElementById("chat-box");
             if (!inputField || !chatBox) return;
@@ -733,7 +726,6 @@
             
             setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
 
-            // የ3 ነጠብጣብ አኒሜሽን ኮድ
             var loadingId = "loading-" + Date.now();
             chatBox.innerHTML += 
                 '<div id="' + loadingId + '" class="flex justify-start w-full py-1">' +
@@ -855,8 +847,7 @@
                     if (!finalReply.includes("```")) {
                         finalReply = await smartTranslate(finalReply, "en", "am");
                     } else {
-                        var sections = finalReply.split(/(
-```[\s\S]*?```)/g);
+                        var sections = finalReply.split(/(```[\s\S]*?```)/g);
                         for (var i = 0; i < sections.length; i++) {
                             if (!sections[i].startsWith("```")) {
                                 sections[i] = await smartTranslate(sections[i], "en", "am");
