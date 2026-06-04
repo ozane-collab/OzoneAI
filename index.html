@@ -16,6 +16,7 @@
             color: #e3e3e3;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
         
         .app-layout {
@@ -73,9 +74,19 @@
             100% { transform: scale(1.2) rotate(5deg); opacity: 1; }
         }
 
-        /* Fixed Sidebar Z-Index Overlays for Mobile Click fixes */
-        .sidebar-hidden { transform: translateX(-100%); opacity: 0; pointer-events: none; }
-        .sidebar-visible { transform: translateX(0); opacity: 1; pointer-events: auto; }
+        /* Fixed Sidebar States for Mobile Touch fixes */
+        .sidebar-hidden { 
+            transform: translateX(-100%); 
+            opacity: 0; 
+            visibility: hidden;
+            pointer-events: none !important; 
+        }
+        .sidebar-visible { 
+            transform: translateX(0); 
+            opacity: 1; 
+            visibility: visible;
+            pointer-events: auto !important; 
+        }
         
         .thinking-dots::after {
             content: '.';
@@ -89,7 +100,6 @@
             100% { content: ''; }
         }
 
-        /* Code Block Styling like Premium AIs */
         .code-container {
             background-color: #1e1f22;
             border: 1px solid #2f3136;
@@ -127,29 +137,29 @@
 <body class="bg-[#131314] text-[#e3e3e3]">
 
     <div class="app-layout">
-        <!-- Sidebar Overlay (Z-index raised to 40, handled properly) -->
-        <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
+        <!-- Sidebar Overlay -->
+        <div id="sidebar-overlay" onclick="toggleSidebar()" ontouchstart="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
 
-        <!-- Sidebar (Z-index raised to 50 for direct mobile touch handling) -->
+        <!-- Sidebar Menu -->
         <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
             <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
                     <span class="text-xl lightning-pulse">⚡️</span>
                     <span id="sidebar-brand-text" class="text-[#00f2fe] font-semibold text-lg tracking-wide">OzoneAI Pro</span>
                 </div>
-                <button type="button" onclick="toggleSidebar()" class="text-gray-400 hover:text-white md:hidden text-lg p-1 cursor-pointer">
+                <button type="button" onclick="toggleSidebar()" ontouchstart="toggleSidebar()" class="text-gray-400 hover:text-white md:hidden text-lg p-2 cursor-pointer">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
             <div class="flex-1 py-4 flex flex-col gap-1 px-3 overflow-y-auto">
-                <button type="button" onclick="selectMenu('chat')" id="menu-chat" class="w-full bg-[#282a2c] text-white text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left">
+                <button type="button" onclick="selectMenu('chat')" class="w-full bg-[#282a2c] text-white text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left">
                     <i class="fa-regular fa-comment-dots text-[#00f2fe]"></i> Chat AI
                 </button>
-                <button type="button" onclick="selectMenu('photo')" id="menu-photo" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left">
+                <button type="button" onclick="selectMenu('photo')" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left">
                     <i class="fa-regular fa-image text-purple-400"></i> Photo AI (Image Gen)
                 </button>
-                <button type="button" onclick="selectMenu('video')" id="menu-video" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left mb-2">
+                <button type="button" onclick="selectMenu('video')" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left mb-2">
                     <i class="fa-solid fa-clapperboard text-red-400"></i> Video Automation
                 </button>
 
@@ -169,54 +179,55 @@
             </div>
         </div>
 
-        <!-- Main Content Area -->
+        <!-- Main Content Container -->
         <div class="main-container">
-            <!-- Top Header -->
-            <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0 relative z-30">
-                <div class="flex items-center gap-3">
-                    <button type="button" onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg cursor-pointer transition p-2 rounded-full hover:bg-gray-800/50">
-                        <i class="fa-solid fa-bars"></i>
+            <!-- Top Navigation Header -->
+            <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0 relative z-20">
+                <div class="flex items-center gap-1">
+                    <!-- Added ontouchstart for immediate response on mobile -->
+                    <button type="button" onclick="toggleSidebar()" ontouchstart="toggleSidebar()" class="text-gray-400 hover:text-white text-xl cursor-pointer transition p-3 rounded-full hover:bg-gray-800/50 block relative z-30" style="min-width: 44px; min-height: 44px;">
+                        <i class="fa-solid fa-bars pointer-events-none"></i>
                     </button>
-                    <div class="text-[#00f2fe] text-sm tracking-wide flex items-center gap-1.5 font-semibold">
+                    <div class="text-[#00f2fe] text-sm tracking-wide flex items-center gap-1.5 font-semibold ml-1">
                         <span class="lightning-pulse">⚡️</span>
                         <span id="top-branding-text">ozoneai_chat</span>
                     </div>
                 </div>
-                <button type="button" onclick="createNewChat()" class="text-xs bg-[#1e1f20] hover:bg-[#282a2c] text-teal-400 px-3 py-1.5 rounded-full border border-gray-800 font-medium transition cursor-pointer flex items-center gap-1.5">
+                <button type="button" onclick="createNewChat()" ontouchstart="createNewChat()" class="text-xs bg-[#1e1f20] hover:bg-[#282a2c] text-teal-400 px-3 py-2 rounded-full border border-gray-800 font-medium transition cursor-pointer flex items-center gap-1.5">
                     <i class="fa-solid fa-plus text-[10px]"></i> New Chat
                 </button>
             </div>
 
-            <!-- Chat Space -->
-            <div id="chat-box" class="chat-scroll-area max-w-3xl w-full mx-auto"></div>
+            <!-- Chat Message Area -->
+            <div id="chat-box" class="chat-scroll-area max-w-3xl w-full mx-auto relative z-10"></div>
 
-            <!-- Image Preview Area -->
+            <!-- Image Preview Overlay Container -->
             <div id="image-preview-container" class="hidden max-w-3xl w-full mx-auto px-4 mb-2 flex-shrink-0 relative z-20">
                 <div class="relative inline-block bg-[#1e1f20] p-2 rounded-xl border border-gray-800">
                     <img id="image-preview" src="" class="h-20 w-20 object-cover rounded-lg">
-                    <button type="button" onclick="clearSelectedImage()" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-500 shadow-lg cursor-pointer">
+                    <button type="button" onclick="clearSelectedImage()" ontouchstart="clearSelectedImage()" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-500 shadow-lg cursor-pointer">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Bottom Input Field (Re-layered with z-30 and absolute clearings) -->
-            <div class="p-4 bg-[#131314] flex-shrink-0 relative z-30 border-t border-gray-900/30">
+            <!-- Input Form Box Container (High Z-Index, No Overlap) -->
+            <div class="p-4 bg-[#131314] flex-shrink-0 relative z-30 border-t border-gray-900/40">
                 <div class="max-w-3xl mx-auto">
                     <div class="flex items-center bg-[#1e1f20] rounded-[24px] px-3 py-1.5 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg w-full relative">
                         
-                        <!-- Upload Plus Button -->
-                        <button type="button" onclick="triggerImageUpload()" class="text-gray-400 hover:text-teal-400 w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0 relative z-40">
-                            <i class="fa-solid fa-plus text-lg"></i>
+                        <!-- Image Upload Button -->
+                        <button type="button" onclick="triggerImageUpload()" ontouchstart="triggerImageUpload()" class="text-gray-400 hover:text-teal-400 w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0 relative z-40">
+                            <i class="fa-solid fa-plus text-lg pointer-events-none"></i>
                         </button>
                         <input type="file" id="image-input" accept="image/*" class="hidden" onchange="previewImage(event)">
 
-                        <!-- Message Input Field -->
+                        <!-- Chat Input Box -->
                         <input type="text" id="user-input" placeholder="Message OzoneAI..." class="block w-full bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[16px] py-2 pl-2 pr-12 relative z-10" autocomplete="off">
                         
-                        <!-- Send Button Fixed Pointer Issues -->
-                        <button type="button" id="send-btn" onclick="sendMessage()" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#00f2fe] w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 z-50">
-                            <i class="fa-solid fa-paper-plane text-base"></i>
+                        <!-- Send Button with Explicit Mobile Touch Event Binding -->
+                        <button type="button" id="send-btn" onclick="sendMessage()" ontouchstart="sendMessage()" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#00f2fe] w-12 h-12 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 z-50" style="min-width: 48px; min-height: 48px;">
+                            <i class="fa-solid fa-paper-plane text-base pointer-events-none"></i>
                         </button>
                         
                     </div>
@@ -378,10 +389,15 @@
             });
         }
 
-        function toggleSidebar() {
+        function toggleSidebar(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             var sidebar = document.getElementById("sidebar");
             var overlay = document.getElementById("sidebar-overlay");
             if (!sidebar || !overlay) return;
+
             if (sidebar.classList.contains("sidebar-hidden")) {
                 sidebar.classList.remove("sidebar-hidden");
                 sidebar.classList.add("sidebar-visible");
@@ -513,6 +529,7 @@
             }
             updateActiveMenuUI(menuType);
             createNewChat();
+            if (window.innerWidth <= 768) toggleSidebar();
         }
 
         function saveMessageToHistory(role, text, imageUrl) {
@@ -582,6 +599,7 @@
                         chatBox.innerHTML += '<div class="text-left mb-4">' + formatAIResponse(msg.text) + '</div>';
                     }
                 });
+                if (window.innerWidth <= 768) toggleSidebar();
             }
         }
 
@@ -591,7 +609,11 @@
             createNewChat();
         }
 
-        async function sendMessage() {
+        async function sendMessage(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             var inputField = document.getElementById("user-input");
             var chatBox = document.getElementById("chat-box");
             if (!inputField || !chatBox) return;
