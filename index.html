@@ -293,7 +293,7 @@ var secretTapCount = 0;
 var isAdminUnlocked = false;
 var selectedImageBase64 = null; 
 
-window.onload = function() {
+window.addEventListener("DOMContentLoaded", function() {
 var inputElement = document.getElementById("user-input");
 if (inputElement) {
 inputElement.addEventListener("keydown", function(event) {
@@ -306,19 +306,8 @@ sendMessage(event);
 
 loadChatHistory();
 showWelcomeMessage();
-setupResponsiveSidebar(); 
-
-if (window.visualViewport) {
-window.visualViewport.addEventListener('resize', function() {
-var layout = document.querySelector('.app-layout');
-if (layout) layout.style.height = window.visualViewport.height + 'px';
-var chatBox = document.getElementById("chat-box");
-if (chatBox) {
-setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 50);
-}
-});
-}
-}; 
+setupResponsiveSidebar();
+}); 
 
 function triggerImageUpload() {
 document.getElementById("image-input").click();
@@ -834,42 +823,42 @@ finalPayloadMessage = "SYSTEM_OVERRIDE_TERMINAL: The user has passed developer a
 var endpoint = RENDER_BASE_URL + "/chat";
 fetch(endpoint, {
 method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-message: finalPayloadMessage,
-image: sendingImage,
-password: inputAuthToken,
-mode: currentMode,
-chat_id: currentChatId
-})
-})
-.then(res => res.json())
-.then(async data => {
-var loadingEl = document.getElementById(loadingId);
-if (loadingEl) loadingEl.remove(); 
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                      message: finalPayloadMessage,
+                      image: sendingImage,
+                      password: inputAuthToken,
+                      mode: currentMode,
+                      chat_id: currentChatId
+                  })
+              })
+              .then(res => res.json())
+              .then(async data => {
+                  var loadingEl = document.getElementById(loadingId);
+                  if (loadingEl) loadingEl.remove(); 
 
-var finalReply = data.reply || "No response received.";
-var messageBodyHtml = finalReply.includes("Ozyan Ekubay") ?
-'<div class="creator-glow-card"><i class="fa-solid fa-terminal text-[#00f2fe] mr-2"></i>' + finalReply.replace("Ozyan Ekubay", '<span class="creator-name-glow">Ozyan Ekubay</span>') + '</div>' :
-formatAIResponse(finalReply); 
+                  var finalReply = data.reply || "No response received.";
+                  var messageBodyHtml = finalReply.includes("Ozyan Ekubay") ?
+                      '<div class="creator-glow-card"><i class="fa-solid fa-terminal text-[#00f2fe] mr-2"></i>' + finalReply.replace("Ozyan Ekubay", '<span class="creator-name-glow">Ozyan Ekubay</span>') + '</div>' :
+                      formatAIResponse(finalReply); 
 
-chatBox.innerHTML +=
-'<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
-'<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words">' + messageBodyHtml + '</div>' +
-'</div>';
-saveMessageToHistory("ai", finalReply, null);
-setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
-})
-.catch(err => {
-var loadingEl = document.getElementById(loadingId);
-if (loadingEl) loadingEl.remove();
-chatBox.innerHTML +=
-'<div class="flex justify-start w-full py-1">' +
-'<div class="bg-red-950/20 text-red-400/90 text-xs rounded-xl px-4 py-2 border border-red-900/30">⚠️ Connection failed. Please try again.</div>' +
-'</div>';
-chatBox.scrollTop = chatBox.scrollHeight;
-});
-}
-</script>
+                  chatBox.innerHTML +=
+                      '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
+                          '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words">' + messageBodyHtml + '</div>' +
+                      '</div>';
+                  saveMessageToHistory("ai", finalReply, null);
+                  setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
+              })
+              .catch(err => {
+                  var loadingEl = document.getElementById(loadingId);
+                  if (loadingEl) loadingEl.remove();
+                  chatBox.innerHTML +=
+                      '<div class="flex justify-start w-full py-1">' +
+                          '<div class="bg-red-950/20 text-red-400/90 text-xs rounded-xl px-4 py-2 border border-red-900/30">⚠️ Connection failed. Please try again.</div>' +
+                      '</div>';
+                  chatBox.scrollTop = chatBox.scrollHeight;
+              });
+          }
+    </script>
 </body>
 </html>
