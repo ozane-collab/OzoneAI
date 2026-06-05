@@ -351,8 +351,7 @@
         }
 
         function formatAIResponse(text) {
-            var codeBlockRegex = /```(\w*)\n([\s\S]*?)
-```/g;
+            var codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
             var match;
             var lastIndex = 0;
             var htmlOutput = "";
@@ -792,31 +791,19 @@
                 return;
             }
 
-            /* --- የፎቶ ማመንጫ ሞተር ማስተካከያ (PHOTO AI ENGINE) --- */
-            var isPhotoTrigger = (currentMode === 'photo') || 
-                                 (/\b(photo|image|picture|art|generate|draw|paint)\b/i.test(lowerMsg)) ||
-                                 (lowerMsg.includes("ፎቶ") || lowerMsg.includes("ስዕል") || lowerMsg.includes("ሳል") || lowerMsg.includes("አምጣ"));
-
-            if (isPhotoTrigger) {
-                // ትዕዛዞችን ነጥሎ ንጹህ ሀሳብ ብቻ ለማውጣት የተሻሻለ Regex
-                var cleanPrompt = message.replace(/(photo|image|generate|picture|create|of|draw|paint|ፎቶ|ስራ|ስራሊኝ|አምጣልኝ|ሳልልኝ|እባክህ|እባክሽ|ሳል|ስዕል)/gi, "").trim();
+            // PHOTO AI ENGINE
+            if (currentMode === 'photo' || lowerMsg.includes("photo") || lowerMsg.includes("image") || lowerMsg.includes("picture") || lowerMsg.includes("ፎቶ") || lowerMsg.includes("ስራሊኝ") || lowerMsg.includes("አምጣልኝ")) {
+                var cleanPrompt = message.replace(/(photo|image|generate|picture|create|of|ፎቶ|ስራ|ስራሊኝ|አምጣልኝ)/gi, "").trim();
                 if(cleanPrompt === "") cleanPrompt = "futuristic cyberpunk character neon design artwork";
 
-                // የአማርኛ ትዕዛዝ ከሆነ በስማርት ትራንስሌት ወደ እንግሊዝኛ መተርጎም
-                if (/[\u1200-\u137F]/.test(cleanPrompt)) { 
-                    let translated = await smartTranslate(cleanPrompt, "auto", "en"); 
-                    if(translated && translated !== cleanPrompt) {
-                        cleanPrompt = translated;
-                    }
-                }
+                if (isAmharic) { cleanPrompt = await smartTranslate(cleanPrompt, "auto", "en"); }
 
                 var generatedImageUrl = "https://image.pollinations.ai/p/" + encodeURIComponent(cleanPrompt) + "?width=1024&height=1024&nologo=true&seed=" + Math.floor(Math.random() * 100000);
                 
                 var loadingEl = document.getElementById(loadingId);
                 if (loadingEl) loadingEl.remove();
                 
-                var isAmharicInput = /[\u1200-\u137F]/.test(message);
-                var replyText = isAmharicInput ? "✨ የፈለጉት ፎቶ በተሳካ ሁኔታ ተዘጋጅቷል፦" : "✨ Here is your generated image:";
+                var replyText = isAmharic ? "✨ የፈለጉት ፎቶ በተሳካ ሁኔታ ተዘጋጅቷል፦" : "✨ Here is your generated image:";
                 chatBox.innerHTML += 
                     '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
                         '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed">' +
@@ -860,8 +847,7 @@
                     if (!finalReply.includes("```")) {
                         finalReply = await smartTranslate(finalReply, "en", "am");
                     } else {
-                        var sections = finalReply.split(/(
-```[\s\S]*?```)/g);
+                        var sections = finalReply.split(/(```[\s\S]*?```)/g);
                         for (var i = 0; i < sections.length; i++) {
                             if (!sections[i].startsWith("```")) {
                                 sections[i] = await smartTranslate(sections[i], "en", "am");
