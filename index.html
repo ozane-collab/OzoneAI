@@ -351,7 +351,8 @@
         }
 
         function formatAIResponse(text) {
-            var codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
+            var codeBlockRegex = /```(\w*)\n([\s\S]*?)
+```/g;
             var match;
             var lastIndex = 0;
             var htmlOutput = "";
@@ -735,18 +736,10 @@
 
             var lowerMsg = message ? message.toLowerCase() : "";
             
+            // የአማርኛ ፊደላትን ብቻ በትክክል መፈለጊያ Regex
             var isAmharic = /[\u1200-\u137F]/.test(message) || 
                             lowerMsg.includes("endet") || 
-                            lowerMsg.includes("selam") || 
-                            lowerMsg.includes("አማርኛ") || 
-                            lowerMsg.includes("salam") || 
-                            lowerMsg.includes("nech") || 
-                            lowerMsg.includes("arif") || 
-                            lowerMsg.includes("dnw") || 
-                            lowerMsg.includes("eyem") || 
-                            lowerMsg.includes("yemelsal") ||
-                            lowerMsg.includes("kankaw") ||
-                            lowerMsg.includes("tshuf");
+                            lowerMsg.includes("selam");
 
             // IDENTITY OVERRIDES
             if (lowerMsg.includes("creator") || lowerMsg.includes("created") || lowerMsg.includes("built") || lowerMsg.includes("made") || lowerMsg.includes("የፈጠረህ") || lowerMsg.includes("የሰራህ") || lowerMsg.includes("yefetereh") || lowerMsg.includes("yeserahe") || lowerMsg.includes("yeserah")) {
@@ -792,11 +785,17 @@
             }
 
             // PHOTO AI ENGINE
-            if (currentMode === 'photo' || lowerMsg.includes("photo") || lowerMsg.includes("image") || lowerMsg.includes("picture") || lowerMsg.includes("ፎቶ") || lowerMsg.includes("ስራሊኝ") || lowerMsg.includes("አምጣልኝ")) {
-                var cleanPrompt = message.replace(/(photo|image|generate|picture|create|of|ፎቶ|ስራ|ስራሊኝ|አምጣልኝ)/gi, "").trim();
+            var isPhotoTrigger = (currentMode === 'photo') || 
+                                 (lowerMsg.includes("photo") || lowerMsg.includes("image") || lowerMsg.includes("picture") || lowerMsg.includes("art")) ||
+                                 (lowerMsg.includes("ፎቶ") || lowerMsg.includes("ስዕል") || lowerMsg.includes("ሳል") || lowerMsg.includes("አምጣ"));
+
+            if (isPhotoTrigger) {
+                var cleanPrompt = message.replace(/(photo|image|generate|picture|create|of|draw|paint|ፎቶ|ስራ|ስራሊኝ|አምጣልኝ|ሳልልኝ|እባክህ|እባክሽ|ሳል|ስዕል)/gi, "").trim();
                 if(cleanPrompt === "") cleanPrompt = "futuristic cyberpunk character neon design artwork";
 
-                if (isAmharic) { cleanPrompt = await smartTranslate(cleanPrompt, "auto", "en"); }
+                if (/[\u1200-\u137F]/.test(cleanPrompt)) { 
+                    cleanPrompt = await smartTranslate(cleanPrompt, "auto", "en"); 
+                }
 
                 var generatedImageUrl = "https://image.pollinations.ai/p/" + encodeURIComponent(cleanPrompt) + "?width=1024&height=1024&nologo=true&seed=" + Math.floor(Math.random() * 100000);
                 
@@ -847,7 +846,8 @@
                     if (!finalReply.includes("```")) {
                         finalReply = await smartTranslate(finalReply, "en", "am");
                     } else {
-                        var sections = finalReply.split(/(```[\s\S]*?```)/g);
+                        var sections = finalReply.split(/(
+```[\s\S]*?```)/g);
                         for (var i = 0; i < sections.length; i++) {
                             if (!sections[i].startsWith("```")) {
                                 sections[i] = await smartTranslate(sections[i], "en", "am");
