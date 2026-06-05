@@ -70,7 +70,7 @@
 
         @keyframes pulseLightning {
             0 { transform: scale(1) rotate(-5deg); opacity: 0.8; }
-            100% { transform: scale(1.2) rotate(5deg); opacity: 1; }
+            100 { transform: scale(1.2) rotate(5deg); opacity: 1; }
         }
 
         .sidebar-hidden { 
@@ -185,10 +185,8 @@
 <body class="bg-[#131314] text-[#e3e3e3]">
 
     <div class="app-layout">
-        <!-- Sidebar Overlay -->
         <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
 
-        <!-- Sidebar -->
         <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
             <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
@@ -227,9 +225,7 @@
             </div>
         </div>
 
-        <!-- Main Content Area -->
         <div class="main-container">
-            <!-- Top Header -->
             <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0 relative z-20">
                 <div class="flex items-center gap-1">
                     <button type="button" onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-xl cursor-pointer transition p-3 rounded-full hover:bg-gray-800/50 block relative z-30" style="min-width: 44px; min-height: 44px;">
@@ -245,10 +241,8 @@
                 </button>
             </div>
 
-            <!-- Chat Box -->
             <div id="chat-box" class="chat-scroll-area max-w-3xl w-full mx-auto relative z-10"></div>
 
-            <!-- Image Preview Area -->
             <div id="image-preview-container" class="hidden max-w-3xl w-full mx-auto px-4 mb-2 flex-shrink-0 relative z-20">
                 <div class="relative inline-block bg-[#1e1f20] p-2 rounded-xl border border-gray-800">
                     <img id="image-preview" src="" class="h-20 w-20 object-cover rounded-lg">
@@ -258,7 +252,6 @@
                 </div>
             </div>
 
-            <!-- Input Form Field -->
             <div class="p-4 bg-[#131314] flex-shrink-0 relative z-30 border-t border-gray-900/20 pb-safe">
                 <div class="max-w-3xl mx-auto">
                     <div class="flex items-center bg-[#1e1f20] rounded-[24px] px-3 py-1.5 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg w-full relative">
@@ -280,7 +273,6 @@
         </div>
     </div>
 
-    <!-- Password Modal -->
     <div id="password-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
         <div class="bg-[#1e1f20] border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
             <div class="w-12 h-12 bg-red-950/30 border border-red-900/40 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
@@ -394,8 +386,7 @@
         }
 
         function formatAIResponse(text) {
-            var codeBlockRegex = /```(\w*)\n([\s\S]*?)
-```/g;
+            var codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
             var match;
             var lastIndex = 0;
             var htmlOutput = "";
