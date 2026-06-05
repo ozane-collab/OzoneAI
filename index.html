@@ -279,7 +279,17 @@
         </div>
     </div> 
 
-    <script>
+        <script>
+        // ማንኛውንም በስልኮች ላይ የሚፈጠር የጃቫስክሪፕት ስህተት በስክሪኑ ላይ እንዲያሳይ ማድረግ
+        window.onerror = function(message, source, lineno, colno, error) {
+            alert("🚨 Error Detected!\nMessage: " + message + "\nLine: " + lineno);
+            return false;
+        };
+
+        var RENDER_BASE_URL = "https://ozoneai.onrender.com"; 
+        var currentChatId = null;
+        // ... የቀረው ኮድ ይቀጥላል ...
+
         var RENDER_BASE_URL = "https://ozoneai.onrender.com"; 
         var currentChatId = null;
         var currentMode = 'chat';
