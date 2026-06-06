@@ -2,292 +2,744 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OzoneAI Chat</title>
-    <!-- ለላቁ አይኮኖች የተጠቀመ -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>OzoneAI Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg-color: #131314;
-            --chat-bg: #1e1e20;
-            --text-color: #e3e3e3;
-            --accent-color: #00ffd1;
-            --accent-glow: rgba(0, 255, 209, 0.2);
-            --user-msg-bg: #2a2a2c;
-        }
-
-        * {
-            box-sizing: border-box;
+        html, body {
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Power Geist';
+            width: 100%;
+            height: 100%;
+            background-color: #131314;
+            color: #e3e3e3;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
         }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
+        
+        .app-layout {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            height: 100vh;
+            height: 100dvh;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .main-container {
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+            background-color: #131314;
         }
 
-        /* Header Area */
-        header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px 20px;
-            background-color: var(--chat-bg);
-            border-bottom: 1px solid #2f2f32;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: var(--text-color);
-        }
-
-        .brand i {
-            color: var(--accent-color);
-            text-shadow: 0 0 10px var(--accent-glow);
-        }
-
-        .new-chat-btn {
-            background-color: #28282a;
-            color: var(--text-color);
-            border: 1px solid #3c3c3e;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: 0.3s;
-        }
-
-        .new-chat-btn:hover {
-            background-color: #3c3c3e;
-        }
-
-        /* Chat Container */
-        .chat-container {
+        .chat-scroll-area {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
+            overflow-x: hidden;
+            padding: 16px;
             display: flex;
             flex-direction: column;
+            justify-content: flex-start;
             gap: 20px;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .message {
-            max-width: 85%;
-            padding: 14px 18px;
-            border-radius: 18px;
-            line-height: 1.6;
-            font-size: 1rem;
-            word-wrap: break-word;
-        }
-
-        .user-message {
-            background-color: var(--user-msg-bg);
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-
-        .ai-message {
-            background-color: transparent;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-            width: 100%;
-        }
-
-        /* Image Styling (ለፎቶ አለመስራት ችግር መፍትሔ) */
-        .generated-image {
-            max-width: 100%;
-            max-height: 400px;
-            border-radius: 12px;
-            margin-top: 10px;
-            border: 1px solid #333;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            display: block;
-        }
-
-        /* Input Area */
-        .input-container {
-            padding: 20px;
-            background-color: var(--bg-color);
-        }
-
-        .input-wrapper {
+        .welcome-wrapper {
+            margin: auto;
             display: flex;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            background-color: var(--chat-bg);
-            border-radius: 28px;
-            padding: 6px 15px;
-            border: 1px solid #3c3c3e;
-            max-width: 800px;
-            margin: 0 auto;
+            text-align: center;
+            padding: 40px 20px;
+            max-width: 450px;
         }
 
-        .input-wrapper:focus-within {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 10px var(--accent-glow);
+        .lightning-pulse {
+            animation: pulseLightning 1.5s infinite alternate;
+            display: inline-block;
+            filter: drop-shadow(0 0 8px #00f2fe);
         }
 
-        .chat-input {
-            flex: 1;
-            background: none;
-            border: none;
-            outline: none;
-            color: var(--text-color);
-            padding: 10px;
-            font-size: 1rem;
-            resize: none;
-            height: 44px;
+        @keyframes pulseLightning {
+            0% { transform: scale(1) rotate(-5deg); opacity: 0.8; }
+            100% { transform: scale(1.2) rotate(5deg); opacity: 1; }
         }
 
-        .send-btn {
-            background: none;
-            border: none;
-            color: var(--accent-color);
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 8px;
-            transition: 0.2s;
+        .sidebar-hidden { transform: translateX(-100%); opacity: 0; pointer-events: none; }
+        .sidebar-visible { transform: translateX(0); opacity: 1; pointer-events: auto; }
+        
+        .thinking-dots::after {
+            content: '.';
+            animation: dots 1.5s infinite steps(4);
+        }
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+            100% { content: ''; }
         }
 
-        .send-btn:hover {
-            transform: scale(1.1);
+        @media (max-width: 768px) {
+            .app-layout { grid-template-columns: 1fr; }
+            .sidebar-visible { width: 280px !important; }
         }
     </style>
 </head>
-<body>
+<body class="bg-[#131314] text-[#e3e3e3]">
 
-    <header>
-        <div class="brand">
-            <i class="fa-solid fa-bolt"></i>
-            <span id="nav-title">ozoneai_chat</span>
+    <div class="app-layout">
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden"></div>
+
+        <div id="sidebar" class="sidebar-hidden md:sidebar-visible fixed md:static bg-[#1e1f20] flex flex-col transition-all duration-300 z-50 h-full w-[260px] border-r border-gray-800/60 left-0 top-0">
+            <div class="p-5 border-b border-gray-800/40 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl lightning-pulse">⚡️</span>
+                    <span id="sidebar-brand-text" class="text-[#00f2fe] font-semibold text-lg tracking-wide">OzoneAI Pro</span>
+                </div>
+                <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white md:hidden text-lg p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 py-4 flex flex-col gap-1 px-3 overflow-y-auto">
+                <button onclick="selectMenu('chat')" id="menu-chat" class="w-full bg-[#282a2c] text-white text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left">
+                    <i class="fa-regular fa-comment-dots text-[#00f2fe]"></i> Chat AI
+                </button>
+                <button onclick="selectMenu('photo')" id="menu-photo" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left">
+                    <i class="fa-regular fa-image text-purple-400"></i> Photo AI (Image Gen)
+                </button>
+                <button onclick="selectMenu('video')" id="menu-video" class="w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left mb-2">
+                    <i class="fa-solid fa-clapperboard text-red-400"></i> Video Automation
+                </button>
+
+                <button onclick="promptForSecretMode()" id="menu-unrestricted" class="hidden w-full text-red-400 bg-red-950/20 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left border border-red-900/40">
+                    <i id="lock-icon" class="fa-solid fa-lock text-red-500"></i> <span id="admin-text">Admin Panel Inactive</span>
+                </button>
+                
+                <div class="border-t border-gray-800/60 my-2 pt-2 flex flex-col flex-1">
+                    <div class="flex justify-between items-center px-3 mb-2">
+                        <span onclick="secretTapTrigger()" id="history-label-text" class="text-[11px] text-gray-500 font-medium uppercase tracking-wider cursor-pointer select-none">Recent Chats</span>
+                        <button onclick="clearAllHistory()" class="text-gray-600 hover:text-red-400 text-xs transition cursor-pointer">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>
+                    <div id="chat-history-list" class="flex flex-col gap-1 overflow-y-auto max-h-[220px]"></div>
+                </div>
+            </div>
         </div>
-        <button class="new-chat-btn" onclick="clearChat()">
-            <i class="fa-solid fa-plus"></i> New Chat
-        </button>
-    </header>
 
-    <div class="chat-container" id="chatContainer">
-        <!-- መልእክቶች እዚህ ይገባሉ -->
+        <div class="main-container">
+            <div class="h-14 flex items-center px-4 justify-between bg-[#131314] border-b border-b-gray-800/20 flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg cursor-pointer transition p-2 rounded-full hover:bg-gray-800/50">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="text-[#00f2fe] text-sm tracking-wide flex items-center gap-1.5 font-semibold">
+                        <span class="lightning-pulse">⚡️</span>
+                        <span id="top-branding-text">ozoneai_chat</span>
+                    </div>
+                </div>
+                <button onclick="createNewChat()" class="text-xs bg-[#1e1f20] hover:bg-[#282a2c] text-teal-400 px-3 py-1.5 rounded-full border border-gray-800 font-medium transition cursor-pointer flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus text-[10px]"></i> New Chat
+                </button>
+            </div>
+
+            <div id="chat-box" class="chat-scroll-area max-w-3xl w-full mx-auto"></div>
+
+            <div id="image-preview-container" class="hidden max-w-3xl w-full mx-auto px-4 mb-2 flex-shrink-0">
+                <div class="relative inline-block bg-[#1e1f20] p-2 rounded-xl border border-gray-800">
+                    <img id="image-preview" src="" class="h-20 w-20 object-cover rounded-lg">
+                    <button onclick="clearSelectedImage()" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-500 shadow-lg">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-4 bg-[#131314] flex-shrink-0 relative z-30">
+                <div class="max-w-3xl mx-auto">
+                    <div class="flex items-center bg-[#1e1f20] rounded-[24px] px-3 py-2.5 focus-within:bg-[#28292a] transition-all duration-200 border border-transparent focus-within:border-gray-800/60 shadow-lg w-full relative">
+                        
+                        <button type="button" onclick="triggerImageUpload()" class="text-gray-400 hover:text-teal-400 w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 flex-shrink-0 z-40">
+                            <i class="fa-solid fa-plus text-lg"></i>
+                        </button>
+                        <input type="file" id="image-input" accept="image/*" class="hidden" onchange="previewImage(event)">
+
+                        <input type="text" id="user-input" placeholder="Message OzoneAI..." class="block w-full bg-transparent border-none outline-none text-[#e3e3e3] placeholder-[#808082] text-[16px] py-2 px-2 mr-12" autocomplete="off">
+                        
+                        <button type="button" id="send-btn" onclick="sendMessage()" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#00f2fe] w-10 h-10 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-gray-800/40 z-50">
+                            <i class="fa-solid fa-paper-plane text-base"></i>
+                        </button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="input-container">
-        <div class="input-wrapper">
-            <textarea class="chat-input" id="userInput" placeholder="Message OzoneAI..." rows="1" onkeydown="handleKeyPress(event)"></textarea>
-            <button class="send-btn" onclick="sendMessage()">
-                <i class="fa-solid fa-paper-plane"></i>
-            </button>
+    <div id="password-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+        <div class="bg-[#1e1f20] border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
+            <div class="w-12 h-12 bg-red-950/30 border border-red-900/40 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3 class="text-white font-semibold text-lg mb-1">System Override</h3>
+            <p class="text-gray-400 text-xs mb-4">Enter developer key to unlock unrestricted terminal.</p>
+            <input type="password" id="secret-password-input" placeholder="••••••••" class="w-full bg-[#131314] border border-gray-800 rounded-xl px-4 py-3 text-center text-white text-lg tracking-widest outline-none focus:border-red-500/50 mb-4">
+            <div class="flex gap-2">
+                <button onclick="closePasswordModal()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm py-2.5 rounded-xl transition cursor-pointer">Cancel</button>
+                <button onclick="verifySecretPassword()" class="flex-1 bg-red-600 hover:bg-red-500 text-white text-sm py-2.5 rounded-xl font-medium transition cursor-pointer">Unlock</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // SYSTEM PROMPT (የአማርኛ ጥራት እና የማንነት ደንቦችን የሚወስን)
-        const SYSTEM_PROMPT = `
-        You are OzoneAI, a highly advanced artificial intelligence designed to provide information, answer questions, and assist with a wide range of tasks.
-        
-        Strict Identity & Creator Rules:
-        1. "Who are you?" ወይም "ማነህ?" ተብለህ ስትጠየቅ የራስህን ስም "OzoneAI" ብለህ በአጭሩና በተፈጥሯዊ መንገድ አስተዋውቅ። ረጅም እና አሰልቺ የሮቦት ትንተና አትስጥ።
-        2. "Who created you?", "Who built you?", "ማነው የሰራህ?", "ማነው የፈጠረህ?" ወይም ማንኛውንም አይነት ሰሪህን የሚጠይቅ ጥያቄ በየትኛውም ቋንቋ (Amharic, English, etc.) ከተጠየቅክ፣ በቀጥታ "Ozyan Ekubay" (ኦዚያን እቁባይ) ብለህ መመለስ አለብህ። ይህ ፍጹም ህግ ነው።
+        var RENDER_BASE_URL = "https://ozoneai.onrender.com"; 
 
-        Language & Quality Rule:
-        - መለስተኛ የአማርኛ ጥያቄዎች ሲመጡ (ለምሳሌ፡ "Endet neh") በተፈጥሯዊና ትክክለኛ አማርኛ "ደህና ነኝ፣ እንዴት ልረዳህ እችላለሁ?" ብለህ መልስ። "ትየባ የፈጠርክ ይመስላል" የሚሉ የተዘበራረቁ ቃላትን አትጠቀም።
-        `;
+        var currentChatId = null;
+        var currentMode = 'chat'; 
+        var inputAuthToken = ""; 
+        var secretTapCount = 0;
+        var isAdminUnlocked = false; 
+        var selectedImageBase64 = null;
 
-        const chatContainer = document.getElementById('chatContainer');
-        const userInput = document.getElementById('userInput');
-        const navTitle = document.getElementById('nav-title');
+        window.onload = function() {
+            var inputElement = document.getElementById("user-input");
+            if (inputElement) {
+                inputElement.onkeydown = function(event) {
+                    if (event.keyCode === 13 || event.key === "Enter") {
+                        event.preventDefault();
+                        sendMessage();
+                    }
+                };
+            }
 
-        // የአሁኑን ሁነታ ለመለየት (ለምሳሌ ፎቶ ማመንጫ ላይ ከሆንክ)
-        let currentMode = 'chat'; 
+            loadChatHistory();
+            showWelcomeMessage();
+            setupResponsiveSidebar();
+            
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', function() {
+                    var layout = document.querySelector('.app-layout');
+                    if (layout) layout.style.height = window.visualViewport.height + 'px';
+                    var chatBox = document.getElementById("chat-box");
+                    if (chatBox) {
+                        setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 50);
+                    }
+                });
+            }
+        };
 
-        function handleKeyPress(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendMessage();
+        function triggerImageUpload() {
+            document.getElementById("image-input").click();
+        }
+
+        function previewImage(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                selectedImageBase64 = e.target.result;
+                document.getElementById("image-preview").src = selectedImageBase64;
+                document.getElementById("image-preview-container").classList.remove("hidden");
+                var chatBox = document.getElementById("chat-box");
+                if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearSelectedImage() {
+            selectedImageBase64 = null;
+            document.getElementById("image-input").value = "";
+            document.getElementById("image-preview-container").classList.add("hidden");
+        }
+
+        function secretTapTrigger() {
+            secretTapCount++;
+            if (secretTapCount >= 3) {
+                secretTapCount = 0;
+                var secretBtn = document.getElementById("menu-unrestricted");
+                if (secretBtn) secretBtn.classList.remove("hidden");
+                promptForSecretMode();
+            }
+        }
+
+        function setupResponsiveSidebar() {
+            var sidebar = document.getElementById("sidebar");
+            if (!sidebar) return;
+            if(window.innerWidth > 768) {
+                sidebar.classList.remove("sidebar-hidden");
+                sidebar.classList.add("sidebar-visible");
+            } else {
+                sidebar.classList.remove("sidebar-visible");
+                sidebar.classList.add("sidebar-hidden");
+            }
+        }
+
+        async function smartTranslate(text, source, target) {
+            try {
+                var url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=" + source + "&tl=" + target + "&dt=t&q=" + encodeURIComponent(text);
+                let res = await fetch(url);
+                let data = await res.json();
+                if (data && data[0]) {
+                    return data[0].map(part => part[0]).join('');
+                }
+                return text;
+            } catch (e) {
+                return text;
+            }
+        }
+
+        function toggleSidebar() {
+            var sidebar = document.getElementById("sidebar");
+            var overlay = document.getElementById("sidebar-overlay");
+            if (!sidebar || !overlay) return;
+            if (sidebar.classList.contains("sidebar-hidden")) {
+                sidebar.classList.remove("sidebar-hidden");
+                sidebar.classList.add("sidebar-visible");
+                if (window.innerWidth <= 768) overlay.classList.remove("hidden");
+            } else {
+                sidebar.classList.remove("sidebar-visible");
+                sidebar.classList.add("sidebar-hidden");
+                if (window.innerWidth <= 768) overlay.classList.add("hidden");
+            }
+        }
+
+        function lockAdminSystem() {
+            isAdminUnlocked = false;
+            inputAuthToken = "";
+            var lockIcon = document.getElementById("lock-icon");
+            var adminText = document.getElementById("admin-text");
+            if (lockIcon) lockIcon.className = "fa-solid fa-lock text-red-500";
+            if (adminText) adminText.innerText = "Admin Panel Inactive";
+        }
+
+        function promptForSecretMode() {
+            if (isAdminUnlocked) {
+                updateActiveMenuUI('unrestricted');
+                createNewChat();
+                return;
+            }
+            var modal = document.getElementById("password-modal");
+            var input = document.getElementById("secret-password-input");
+            if (modal && input) {
+                modal.classList.remove("hidden");
+                input.focus();
+            }
+        }
+
+        function closePasswordModal() {
+            var modal = document.getElementById("password-modal");
+            var input = document.getElementById("secret-password-input");
+            if (modal && input) {
+                modal.classList.add("hidden");
+                input.value = "";
+            }
+        }
+
+        function verifySecretPassword() {
+            var input = document.getElementById("secret-password-input");
+            if (!input) return;
+            var pass = input.value.trim();
+            if (pass === "E12N21OSK") {
+                inputAuthToken = pass;
+                isAdminUnlocked = true; 
+                closePasswordModal();
+                var lockIcon = document.getElementById("lock-icon");
+                var adminText = document.getElementById("admin-text");
+                if (lockIcon) lockIcon.className = "fa-solid fa-lock-open text-green-400";
+                if (adminText) adminText.innerText = "Admin Panel Active";
+                updateActiveMenuUI('unrestricted');
+                createNewChat();
+            } else {
+                alert("❌ Access Denied.");
+                closePasswordModal();
+            }
+        }
+
+        function showWelcomeMessage() {
+            var title = "OzoneAI";
+            var subtitle = "How can I help you today?";
+            var placeholder = "Message OzoneAI...";
+
+            if (currentMode === 'photo') {
+                title = "Ozone Photo AI";
+                subtitle = "Generate & edit stunning images.";
+                placeholder = "Describe the image you want to generate...";
+            } else if (currentMode === 'video') {
+                title = "Ozone Video Automation";
+                subtitle = "Create & structure video scripts.";
+                placeholder = "Enter video topic or concept...";
+            } else if (currentMode === 'unrestricted') {
+                title = "OzoneAI [UNRESTRICTED]";
+                subtitle = "Developer Backdoor Active.";
+                placeholder = "Execute command...";
+            }
+
+            var inputEl = document.getElementById("user-input");
+            if (inputEl) inputEl.placeholder = placeholder;
+            
+            var chatBox = document.getElementById("chat-box");
+            if (chatBox) {
+                var color = currentMode === 'unrestricted' ? '#ef4444' : '#00f2fe';
+                chatBox.innerHTML =
+                     '<div id="welcome-message" class="welcome-wrapper">' +
+                        '<h1 style="color: ' + color + '; font-weight: bold; margin-bottom: 10px; font-size: 2.2rem; display: flex; align-items: center; justify-content: center; gap: 10px;">' +
+                            '<span class="lightning-pulse">⚡️</span><span>' + title + '</span>' +
+                        '</h1>' +
+                        '<h2 style="color: rgba(227, 227, 227, 0.75); font-weight: 500; font-size: 1.05rem; margin: 0; letter-spacing: 0.3px;">' + subtitle + '</h2>' +
+                    '</div>';
+            }
+        }
+
+        function createNewChat() {
+            currentChatId = null;
+            clearSelectedImage();
+            showWelcomeMessage();
+            loadChatHistory();
+            if(window.innerWidth <= 768) {
+                var sidebar = document.getElementById("sidebar");
+                var overlay = document.getElementById("sidebar-overlay");
+                if (sidebar && overlay) {
+                    sidebar.classList.remove("sidebar-visible");
+                    sidebar.classList.add("sidebar-hidden");
+                    overlay.classList.add("hidden");
+                }
+            }
+        }
+
+        function updateActiveMenuUI(menuType) {
+            currentMode = menuType;
+            var topText = document.getElementById("top-branding-text");
+            if (topText) topText.innerText = "ozoneai_" + menuType;
+            
+            var menus = ['chat', 'photo', 'video', 'unrestricted'];
+            menus.forEach(function(m) {
+                var el = document.getElementById('menu-' + m);
+                if (el) {
+                    if (m === menuType) {
+                        el.className = "w-full bg-[#282a2c] text-white text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 font-medium cursor-pointer text-left";
+                    } else {
+                        el.className = "w-full text-gray-400 hover:text-white hover:bg-[#282a2c]/50 text-[14px] py-3 px-4 rounded-xl transition flex items-center gap-3 cursor-pointer text-left";
+                    }
+                }
+            });
+            
+            var historyLabel = document.getElementById("history-label-text");
+            if (historyLabel) {
+                historyLabel.innerText = (menuType === 'unrestricted') ? "Secret Terminals" : "Recent Chats";
+            }
+        }
+
+        function selectMenu(menuType) {
+            if (currentMode === 'unrestricted' && menuType !== 'unrestricted') {
+                lockAdminSystem();
+            }
+
+            if (menuType === 'unrestricted' && !isAdminUnlocked) {
+                promptForSecretMode();
+                return;
+            }
+            updateActiveMenuUI(menuType);
+            createNewChat();
+        }
+
+        function saveMessageToHistory(role, text, imageUrl) {
+            var storageKey = (currentMode === 'unrestricted') ? "ozone_admin_sessions" : "ozone_sessions";
+            var savedChats = localStorage.getItem(storageKey);
+            var sessions = savedChats ? JSON.parse(savedChats) : [];
+            var msgObj = { role: role, text: text };
+            if (imageUrl) msgObj.image = imageUrl;
+
+            if (currentChatId === null) {
+                currentChatId = "chat_" + Date.now();
+                var newSession = {
+                    id: currentChatId,
+                    mode: currentMode,
+                    title: (currentMode === 'unrestricted' ? "⚠️ " : "[" + currentMode.toUpperCase() + "] ") + text.substring(0, 15),
+                    messages: [msgObj]
+                };
+                sessions.unshift(newSession);
+            } else {
+                for (var i = 0; i < sessions.length; i++) {
+                    if (sessions[i].id === currentChatId) {
+                        sessions[i].messages.push(msgObj);
+                        break;
+                    }
+                }
+            }
+            localStorage.setItem(storageKey, JSON.stringify(sessions));
+            loadChatHistory();
+        }
+
+        function loadChatHistory() {
+            var historyList = document.getElementById("chat-history-list");
+            if (!historyList) return;
+            
+            var storageKey = (currentMode === 'unrestricted') ? "ozone_admin_sessions" : "ozone_sessions";
+            var savedChats = localStorage.getItem(storageKey);
+            historyList.innerHTML = "";
+            
+            if (savedChats) {
+                var sessions = JSON.parse(savedChats);
+                if (sessions.length > 0) {
+                    sessions.forEach(function(session) {
+                        var displayTitle = session.title;
+                        if (displayTitle.length > 20) displayTitle = displayTitle.substring(0, 18) + "...";
+                        var isActive = session.id === currentChatId ? "bg-[#282a2c]/60 text-white" : "text-gray-400";
+                        
+                        var item = document.createElement("div");
+                        item.className = "history-item " + isActive + " hover:text-white hover:bg-[#282a2c]/40 text-[13px] py-2 px-3 rounded-lg cursor-pointer transition flex items-center justify-between group truncate";
+                        item.setAttribute("onclick", "openChatSession('" + session.id + "')");
+                        item.innerHTML =
+                              '<div class="flex items-center gap-2 truncate flex-1">' +
+                                '<i class="fa-regular fa-message text-xs text-gray-500"></i>' +
+                                '<span class="truncate">' + displayTitle + '</span>' +
+                            '</div>' +
+                            '<button onclick="deleteSingleHistory(\'' + session.id + '\', event)" class="text-gray-500 hover:text-red-400 p-1 rounded transition ml-1">' +
+                                '<i class="fa-solid fa-xmark text-xs"></i>' +
+                            '</button>';
+                        historyList.appendChild(item);
+                    });
+                    return;
+                }
+            }
+            historyList.innerHTML = '<div class="text-xs text-gray-500 italic px-3 py-1">No chats found</div>';
+        }
+
+        function openChatSession(id) {
+            var storageKey = (currentMode === 'unrestricted') ? "ozone_admin_sessions" : "ozone_sessions";
+            var savedChats = localStorage.getItem(storageKey);
+            if (!savedChats) return;
+            var sessions = JSON.parse(savedChats);
+            var activeSession = sessions.find(s => s.id === id);
+            
+            if (activeSession) {
+                if (activeSession.mode === 'unrestricted' && !isAdminUnlocked) {
+                    promptForSecretMode();
+                    return;
+                }
+                
+                currentChatId = id;
+                updateActiveMenuUI(activeSession.mode);
+                
+                var chatBox = document.getElementById("chat-box");
+                if (!chatBox) return;
+                chatBox.innerHTML = "";
+                
+                var welcome = document.getElementById("welcome-message");
+                if (welcome) welcome.style.display = "none";
+
+                activeSession.messages.forEach(function(msg) {
+                    if (msg.role === "user") {
+                        var imgHtml = msg.image ? '<img src="' + msg.image + '" class="mt-2 rounded-xl max-w-[200px] border border-gray-700" />' : '';
+                        chatBox.innerHTML += 
+                            '<div style="display: flex; flex-direction: column; align-items: flex-end; width: 100%; margin-bottom: 10px;">' +
+                                '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + msg.text + '</div>' +
+                                imgHtml +
+                            '</div>';
+                    } else {
+                        var imgHtml = msg.image ? '<img src="' + msg.image + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-md" />' : '';
+                        chatBox.innerHTML += 
+                            '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
+                                '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + msg.text + imgHtml + '</div>' +
+                            '</div>';
+                    }
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+                loadChatHistory();
+                if(window.innerWidth <= 768) toggleSidebar();
+            }
+        }
+
+        function deleteSingleHistory(id, event) {
+            if (event) event.stopPropagation();
+            var storageKey = (currentMode === 'unrestricted') ? "ozone_admin_sessions" : "ozone_sessions";
+            var savedChats = localStorage.getItem(storageKey);
+            if (savedChats) {
+                var sessions = JSON.parse(savedChats);
+                var updatedSessions = sessions.filter(s => s.id !== id);
+                localStorage.setItem(storageKey, JSON.stringify(updatedSessions));
+                if (currentChatId === id) createNewChat();
+                else loadChatHistory();
+            }
+        }
+
+        function clearAllHistory() {
+            if(confirm("Are you sure you want to clear this view's history?")) {
+                var storageKey = (currentMode === 'unrestricted') ? "ozone_admin_sessions" : "ozone_sessions";
+                localStorage.removeItem(storageKey);
+                createNewChat();
             }
         }
 
         async function sendMessage() {
-            const text = userInput.value.trim();
-            if (!text) return;
+            var inputField = document.getElementById("user-input");
+            var chatBox = document.getElementById("chat-box");
+            if (!inputField || !chatBox) return;
+            var message = inputField.value.trim();
 
-            // የተጠቃሚ መልእክት ማሳየት
-            appendMessage(text, 'user-message');
-            userInput.value = '';
+            if (message === "" && !selectedImageBase64) return;
 
-            // የሞድ መለወጫ ሎጂክ (በጥያቄህ መሠረት ስያሜውን ለመቀየር)
-            if (text.toLowerCase().includes('photo') || text.toLowerCase().includes('image') || text.toLowerCase().includes('picture')) {
-                currentMode = 'photo';
-                navTitle.innerText = 'ozoneai_photo';
-            }
-
-            // ማቀናበሪያ (Processing Mode)
-            const aiResponse = generateLocalLogic(text);
+            var welcome = document.getElementById("welcome-message");
+            if (welcome) welcome.style.display = "none";
             
-            // የ AI መልእክት ማሳየት
-            setTimeout(() => {
-                appendMessage(aiResponse, 'ai-message');
-            }, 400);
-        }
+            var userImgHtml = selectedImageBase64 ? '<img src="' + selectedImageBase64 + '" class="mt-2 rounded-xl max-w-[200px] border border-gray-700" />' : '';
+            
+            chatBox.innerHTML +=
+                '<div style="display: flex; flex-direction: column; align-items: flex-end; width: 100%; margin-bottom: 10px;">' +
+                    '<div class="bg-[#282a2c] text-[#e3e3e3] rounded-2xl px-4 py-2.5 text-[15px] max-w-[85%] break-words shadow-sm">' + (message || "Sent an image") + '</div>' +
+                    userImgHtml +
+                '</div>';
+            
+            saveMessageToHistory("user", message || "Sent an image", selectedImageBase64);
+            var sendingImage = selectedImageBase64;
+            clearSelectedImage();
+            inputField.value = "";
+            
+            setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
 
-        // ሎጂክ ማስተካከያ (ለማንነት፣ ለፈጣሪ እና ለፎቶዎች የተሰራ)
-        function generateLocalLogic(input) {
-            const cleanInput = input.trim().toLowerCase();
+            var loadingId = "loading-" + Date.now();
+            chatBox.innerHTML += 
+                '<div id="' + loadingId + '" class="flex justify-start w-full py-1">' +
+                    '<div class="text-gray-400 text-xl font-bold tracking-widest thinking-dots">..</div>' +
+                '</div>';
+            setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
 
-            // 1. "ማነው የፈጠረህ/የሰራህ?" ጥያቄ (በማንኛውም ቋንቋ)
-            if (cleanInput.includes('who created you') || 
-                cleanInput.includes('who made you') || 
-                cleanInput.includes('who built you') || 
-                cleanInput.includes('ማነው የሰራህ') || 
-                cleanInput.includes('ማነው የፈጠረህ') ||
-                cleanInput.includes('creator')) {
-                return "I was created by **Ozyan Ekubay**.";
+            var lowerMsg = message ? message.toLowerCase() : "";
+            
+            var isAmharic = /[\u1200-\u137F]/.test(message) || 
+                            lowerMsg.includes("endet") || 
+                            lowerMsg.includes("selam") || 
+                            lowerMsg.includes("አማርኛ") || 
+                            lowerMsg.includes("salam") || 
+                            lowerMsg.includes("nech") || 
+                            lowerMsg.includes("arif") || 
+                            lowerMsg.includes("dnw") || 
+                            lowerMsg.includes("eyem") || 
+                            lowerMsg.includes("yemelsal") ||
+                            lowerMsg.includes("kankaw") ||
+                            lowerMsg.includes("tshuf");
+
+            // CRITICAL IDENTITY OVERRIDES (CLIENT-SIDE CAPTURING)
+            // 1. "ማነው የፈጠረህ/የሰራህ?" (Who created you?) -> Ozyan Ekubay
+            if (lowerMsg.includes("creator") || lowerMsg.includes("created") || lowerMsg.includes("built") || lowerMsg.includes("made") || lowerMsg.includes("የፈጠረህ") || lowerMsg.includes("የሰራህ") || lowerMsg.includes("yefetereh") || lowerMsg.includes("yeserahe") || lowerMsg.includes("yeserah")) {
+                var loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
+                
+                var creatorReply = isAmharic ? "እኔን የፈጠረኝ **Ozyan Ekubay** ነው።" : "I was created by **Ozyan Ekubay**.";
+                chatBox.innerHTML += 
+                    '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
+                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + creatorReply + '</div>' +
+                    '</div>';
+                saveMessageToHistory("ai", creatorReply, null);
+                setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
+                return;
             }
 
-            // 2. "ማነህ?" ጥያቄ (የራሱን ስም OzoneAI ይላል)
-            if (cleanInput === 'who are you' || cleanInput === 'ማነህ' || cleanInput === 'ማነሽ') {
-                return "I am **OzoneAI**, a highly advanced artificial intelligence designed to assist you with any tasks, coding, and information.";
+            // 2. "ማነህ?" (Who are you?) -> OzoneAI
+            if (lowerMsg === "who are you" || lowerMsg === "maneh" || lowerMsg === "manesh" || message === "ማነህ" || message === "ማነሽ") {
+                var loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
+                
+                var identityReply = isAmharic ? "እኔ **OzoneAI** ነኝ፣ የላቀ የሰው ሰራሽ አስተዋፅኦ ረዳት።" : "I am **OzoneAI**, an advanced AI digital assistant.";
+                chatBox.innerHTML += 
+                    '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
+                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + identityReply + '</div>' +
+                    '</div>';
+                saveMessageToHistory("ai", identityReply, null);
+                setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
+                return;
             }
 
-            // 3. የአማርኛ ሰላምታ ማስተካከያ (file 1000026653_2.jpg ችግር መፍትሔ)
-            if (cleanInput === 'endet neh' || cleanInput === 'እንዴት ነህ' || cleanInput === 'ሰላም') {
-                return "ደህና ነኝ! እንዴት ልረዳህ እችላለሁ?";
+            // PHOTO AI GENERATOR WORKING CORRECTLY WITH POLLINATIONS
+            if (currentMode === 'photo' || lowerMsg.includes("photo") || lowerMsg.includes("image") || lowerMsg.includes("picture") || lowerMsg.includes("ፎቶ") || lowerMsg.includes("ስራሊኝ") || lowerMsg.includes("አምጣልኝ")) {
+                var cleanPrompt = message.replace(/(photo|image|generate|picture|create|of|ፎቶ|ስራ|ስራሊኝ|አምጣልኝ)/gi, "").trim();
+                if(cleanPrompt === "") cleanPrompt = "futuristic concept car cyberpunk style rendering";
+
+                if (isAmharic) { cleanPrompt = await smartTranslate(cleanPrompt, "auto", "en"); }
+
+                var generatedImageUrl = "https://image.pollinations.ai/p/" + encodeURIComponent(cleanPrompt) + "?width=1024&height=1024&nologo=true&seed=" + Math.floor(Math.random() * 100000);
+                
+                var loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
+                
+                var replyText = isAmharic ? "✨ የፈለጉት ፎቶ ተዘጋጅቷል፦" : "✨ Here is your generated image:";
+                chatBox.innerHTML += 
+                    '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
+                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed">' +
+                            '<div>' + replyText + '</div>' +
+                            '<img src="' + generatedImageUrl + '" class="mt-3 rounded-xl max-w-sm w-full border border-gray-800 shadow-xl" alt="Ozone AI Gen" />' +
+                        '</div>' +
+                    '</div>';
+                saveMessageToHistory("ai", replyText, generatedImageUrl);
+                setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
+                return;
             }
 
-            // 4. የምስል ማመንጫ ሎጂክ (file 1000026655.jpg የተሰበረ ሊንክ መፍትሔ)
-            if (cleanInput.includes('car in the rian') || cleanInput.includes('car in the rain') || currentMode === 'photo') {
-                currentMode = 'chat'; // መልሰህ ወደ ቻት ቀይረው
-                // እዚህ ጋር ከእውነተኛው የፎቶ API የሚመጣውን ዩአርኤል (URL) ትተካለህ። ለአሁኑ ማሳያ Unsplash ተጠቅሜያለሁ።
-                const imageUrl = "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80"; 
-                return `✨ Here is your generated image:<br><img src="${imageUrl}" alt="Ozone AI Gen" class="generated-image">`;
+            // SHORT INPUT LENGTH MANAGEMENT SYSTEM (HI/HELLO LOGIC)
+            if (message.length <= 5 && (lowerMsg.includes("hi") || lowerMsg.includes("hello") || lowerMsg.includes("hey") || lowerMsg.includes("selam") || lowerMsg.includes("ሰላም") || lowerMsg.includes("endet"))) {
+                var loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
+                
+                var briefReply = isAmharic ? "ሰላም! እንዴት ልረዳዎት እችላለሁ?" : "Hello! How can I assist you today?";
+                chatBox.innerHTML += 
+                    '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
+                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + briefReply + '</div>' +
+                    '</div>';
+                saveMessageToHistory("ai", briefReply, null);
+                setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
+                return;
             }
 
-            // ለሌሎች አጠቃላይ ጥያቄዎች
-            return "I am processing your request based on OzoneAI configurations.";
-        }
+            var finalPayloadMessage = message;
+            if (isAmharic && message !== "") {
+                finalPayloadMessage = await smartTranslate(message, "auto", "en");
+            }
 
-        function appendMessage(text, className) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${className}`;
-            messageDiv.innerHTML = text;
-            chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
+            var endpoint = RENDER_BASE_URL + "/chat";
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    message: finalPayloadMessage,
+                    image: sendingImage, 
+                    password: inputAuthToken,
+                    mode: currentMode,
+                    chat_id: currentChatId
+                })
+            })
+            .then(res => res.json())
+            .then(async data => {
+                var loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
+                
+                var finalReply = data.reply || "No response received.";
 
-        function clearChat() {
-            chatContainer.innerHTML = '';
-            navTitle.innerText = 'ozoneai_chat';
-            currentMode = 'chat';
+                if (isAmharic) { 
+                    finalReply = await smartTranslate(finalReply, "en", "am"); 
+                }
+
+                chatBox.innerHTML += 
+                    '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
+                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + finalReply + '</div>' +
+                    '</div>';
+                saveMessageToHistory("ai", finalReply, null);
+                setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
+            })
+            .catch(err => {
+                var loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
+                chatBox.innerHTML += 
+                    '<div class="flex justify-start w-full py-1">' +
+                        '<div class="bg-red-950/20 text-red-400/90 text-xs rounded-xl px-4 py-2 border border-red-900/30">⚠️ Connection failed. Please try again.</div>' +
+                    '</div>';
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
         }
     </script>
 </body>
