@@ -139,6 +139,13 @@
             background-color: #1e1f22;
         }
 
+        /* Ozyan Ekubay ለሚለው ስም ልዩ ስታይል */
+        .creator-highlight {
+            color: #00f2fe;
+            font-weight: bold;
+            text-shadow: 0 0 6px rgba(0, 242, 254, 0.4);
+        }
+
         @media (max-width: 768px) {
             .app-layout { grid-template-columns: 1fr; }
             .sidebar-visible { width: 280px !important; }
@@ -349,6 +356,9 @@
         }
 
         function formatAIResponse(text) {
+            // Ozyan Ekubay ለሚለው ስም ከለር መቀየሪያ ማስተካከያ
+            text = text.replace(/(Ozyan Ekubay|\*\*Ozyan Ekubay\*\*)/gi, '<span class="creator-highlight">Ozyan Ekubay</span>');
+
             var codeBlockRegex = /```(\w*)\n([\s\S]*?)
 ```/g;
             var match;
@@ -754,7 +764,7 @@
                 var creatorReply = isAmharic ? "እኔን የፈጠረኝ **Ozyan Ekubay** ነው።" : "I was created by **Ozyan Ekubay**.";
                 chatBox.innerHTML += 
                     '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
-                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + creatorReply + '</div>' +
+                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + formatAIResponse(creatorReply) + '</div>' +
                     '</div>';
                 saveMessageToHistory("ai", creatorReply, null);
                 setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
@@ -768,7 +778,7 @@
                 var identityReply = isAmharic ? "እኔ **OzoneAI** ነኝ፣ የላቀ የሰው ሰራሽ አስተዋፅኦ ረዳት።" : "I am **OzoneAI**, an advanced AI digital assistant.";
                 chatBox.innerHTML += 
                     '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
-                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + identityReply + '</div>' +
+                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + formatAIResponse(identityReply) + '</div>' +
                     '</div>';
                 saveMessageToHistory("ai", identityReply, null);
                 setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
@@ -782,13 +792,14 @@
                 var briefReply = isAmharic ? "እግዚአብሔር ይመስገን ሰላም ነኝ! እንዴት ልረዳዎት እችላለሁ?" : "Hello! I am doing well, how can I help you today?";
                 chatBox.innerHTML += 
                     '<div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: 15px;">' +
-                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + briefReply + '</div>' +
+                        '<div class="text-[#e3e3e3] text-[15px] max-w-full leading-relaxed break-words whitespace-pre-line">' + formatAIResponse(briefReply) + '</div>' +
                     '</div>';
                 saveMessageToHistory("ai", briefReply, null);
                 setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
                 return;
             }
 
+            // PHOTO AI ማስተካከያ (ያለ ስህተት ምስሎችን እንዲያመጣ)
             if (currentMode === 'photo' || lowerMsg.includes("photo") || lowerMsg.includes("image") || lowerMsg.includes("picture") || lowerMsg.includes("ፎቶ") || lowerMsg.includes("ስራሊኝ") || lowerMsg.includes("አምጣልኝ")) {
                 var cleanPrompt = message.replace(/(photo|image|generate|picture|create|of|ፎቶ|ስራ|ስራሊኝ|አምጣልኝ)/gi, "").trim();
                 if(cleanPrompt === "") cleanPrompt = "futuristic cyberpunk character neon design artwork";
