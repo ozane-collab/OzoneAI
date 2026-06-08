@@ -55,7 +55,7 @@ def chat():
         # በOpenRouter ላይ የ Llama 3 ነፃ ሞዴል ጥሪ (ወደ OpenRouter ሞዴል ተቀይሯል)
         completion = client.chat.completions.create(
             extra_headers={
-                "HTTP-Referer": "https://ozone-collab.github.io", # ለ OpenRouter መለያ ማሳያ (ግዴታ አይደለም ግን ይመረጣል)
+                "HTTP-Referer": "https://ozone-collab.github.io", # ለ OpenRouter መለያ ማሳያ
                 "X-Title": "OzoneAI",
             },
             model="meta-llama/llama-3-8b-instruct:free", # የ OpenRouter ነፃ የLlama 3 ሞዴል ስም
