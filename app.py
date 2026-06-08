@@ -66,7 +66,7 @@ def chat():
             )
             bot_reply = completion.choices[0].message.content
             
-        # 🤖 ሐ. ለተቀሩት MODES (Chat, Video) -> በ GROQ በኩል (በወቅታዊው ሞዴል)
+        # 🤖 ሐ. ለተቀሩት MODES (Chat, Video) -> በ GROQ በኩል (በአዲሱ ሞዴል)
         else:
             if not groq_client:
                 return jsonify({"reply": "⚠️ GROQ_API_KEY በRender ላይ አልተጫነም!"})
@@ -76,9 +76,9 @@ def chat():
             else:
                 system_instruction = "You are OzoneAI, a helpful assistant built by Ozyan Ekubay."
 
-            # ሞዴሉ ወደ አዲሱ እና አስተማማኙ "llama3-8b-8192" ተቀይሯል
+            # 🛠️ ማስተካከያ፦ አገልግሎት ካቆመው "llama3-8b-8192" ወደ አዲሱ "llama-3.1-8b-instant" ተቀይሯል
             completion = groq_client.chat.completions.create(
-                model="llama3-8b-8192", 
+                model="llama-3.1-8b-instant", 
                 messages=[
                     {"role": "system", "content": system_instruction},
                     {"role": "user", "content": user_message}
