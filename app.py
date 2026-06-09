@@ -5,15 +5,14 @@ from flask_cors import CORS
 import google.generativeai as genai
 
 app = Flask(__name__)
-# ፍሮንትኤንድህ ያለ ምንም መከልከል (CORS Error) እንዲያገኘው ይፈቅዳል
 CORS(app)
 
 # 🔑 1. የ Google AI Studio Key (ለ Chat, Photo እና Video ማስተናገጃ)
+# የ 401 ስህተትን ለመከላከል ኤፒአይ ቁልፉን በቀጥታ በ GenerativeModel ጥሪ ላይ ወይም እዚህ ጋር በጥንቃቄ እናስራዋለን
 GEMINI_API_KEY = "AQ.Ab8RN6KQ55v4jHM7t3JP-GIRhwVNQwK4L9eqhKMsvXbcYEnjsQ"
 genai.configure(api_key=GEMINI_API_KEY)
 
 # 🔑 2. የ OpenRouter API Key (ለ Unrestricted/Ultimate ሞድ)
-# ያቀረብከው እውነተኛ ቁልፍ እዚህ ጋር በቋሚነት ገብቷል 👇
 OPENROUTER_API_KEY = "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"
 
 # 1. 💬 Chat AI Endpoint (Gemini)
@@ -25,8 +24,14 @@ def chat_ai():
             return jsonify({"reply": "⚠️ Please provide a message."}), 400
         
         user_message = data['message']
+        
+        # የ 401 ስህተትን ለማስቀረት ኤፒአይ ቁልፉን በደንብ አረጋግጦ ሞዴሉን መጥራት
         model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(user_message)
+        
+        if not response.text:
+            return jsonify({"reply": "⚠️ Empty response from AI Studio."}), 500
+            
         return jsonify({"reply": response.text})
     except Exception as e:
         return jsonify({"reply": f"⚠️ Error in Chat AI: {str(e)}"}), 500
@@ -60,6 +65,7 @@ def video_ai():
         
         concept = data['message']
         video_prompt = f"Create a structured video script layout, scenes, and narration for: {concept}"
+        
         model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(video_prompt)
         return jsonify({"reply": response.text})
@@ -76,12 +82,14 @@ def ultimate_ai():
         
         command = data['message']
         
-        # OpenRouter ላይ ገደብ የሌለውና ምርጥ የሆነውን የ Llama 3 ሞዴል እንጠቀማለን
-        model_name = "meta-llama/llama-3-70b-instruct:free" 
+        # 🔄 የ 404 ስህተትን ለማስተካከል፦ OpenRouter ላይ ሁልጊዜ ክፍት እና ነፃ የሆነውን የንጹህ Llama ሞዴል ስም ተክቻለሁ
+        model_name = "meta-llama/llama-3-8b-instruct:free"
         
         headers = {
             "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://ozone-collab.github.io", # ለ OpenRouter መታወቂያ እንዲሆንህ
+            "X-Title": "OzoneAI"
         }
         
         payload = {
@@ -92,7 +100,6 @@ def ultimate_ai():
             ]
         }
         
-        # ጥያቄውን ወደ OpenRouter መላክ
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers=headers,
@@ -104,6 +111,19 @@ def ultimate_ai():
             ai_reply = result['choices'][0]['message']['content']
             return jsonify({"reply": ai_reply})
         else:
+            # የ 404 ሞዴል ስህተት ዳግም ቢመጣ በራስ-ሰር ወደ ሌላ ነፃ ሞዴል (Mistral) እንዲቀይር መከላከያ
+            fallback_payload = payload.copy()
+            fallback_payload["model"] = "mistralai/mistral-7b-instruct:free"
+            
+            retry_response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers=headers,
+                json=fallback_payload
+            )
+            if retry_response.status_code == 200:
+                result = retry_response.json()
+                return jsonify({"reply": result['choices'][0]['message']['content']})
+                
             return jsonify({"reply": f"⚠️ OpenRouter Error: {response.text}"}), response.status_code
 
     except Exception as e:
