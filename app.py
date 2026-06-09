@@ -3,11 +3,11 @@ from flask_cors import CORS
 import os
 
 app = Flask(__name__)
-# CORS መፍቀድ ፍሮንትኤንድህ ያለ ምንም ችግር እንዲያገኘው ያደርጋል
+# CORS ፍሮንትኤንድህ ያለ ምንም ችግር (Blocked ሳይሆን) ሰርቨሩን እንዲያገኘው ይፈቅዳል
 CORS(app)
 
 # 1. መደበኛ የቻት ኤንድፖይንት
-@app.route('/api/chat', codecs=['POST'])
+@app.route('/api/chat', methods=['POST'])
 def chat_ai():
     data = request.get_json()
     if not data or 'message' not in data:
@@ -30,11 +30,11 @@ def photo_ai():
     
     prompt = data['message']
     
-    # እዚህ ላይ የሰነጨርከውን ምስል መፍጠሪያ API (Image Gen API) ታስገባለህ
+    # እዚህ ላይ የፈለግኸውን Image Generation API ማገናኘት ትችላለህ
     # ለሙከራ የሚሆን የናሙና ምስል ዩአርኤል (Placeholder URL)፦
     generated_image_url = "https://via.placeholder.com/512/1e1f20/00f2fe?text=Ozone+AI+Generated+Image"
     
-    # በፍሮንትኤንድህ ፍላጎት መሠረት ምላሹ በእንግليዝኛ ተደርጓል
+    # በፍሮንትኤንድህ ፍላጎት መሠረት ምላሹ በእንግሊዝኛ ተደርጓል
     return jsonify({
         "reply": "✨ Image generated successfully based on your prompt!",
         "url": generated_image_url
