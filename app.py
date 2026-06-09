@@ -13,8 +13,8 @@ GEMINI_API_KEY = "AQ.Ab8RN6KQ55v4jHM7t3JP-GIRhwVNQwK4L9eqhKMsvXbcYEnjsQ"
 genai.configure(api_key=GEMINI_API_KEY)
 
 # 🔑 2. የ OpenRouter API Key (ለ Unrestricted/Ultimate ሞድ)
-# Render ላይ በ Environment Variable ካስገባኸው እሱን ያነባል፣ ካልሆነ ግን ቀጥታ እዚህ መተካት ትችላለህ
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "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")
+# ያቀረብከው እውነተኛ ቁልፍ እዚህ ጋር በቋሚነት ገብቷል 👇
+OPENROUTER_API_KEY = "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"
 
 # 1. 💬 Chat AI Endpoint (Gemini)
 @app.route('/api/chat', methods=['POST'])
