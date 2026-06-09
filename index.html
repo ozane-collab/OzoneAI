@@ -286,6 +286,9 @@ var secretTapCount = 0;
 var isAdminUnlocked = false;
 var selectedImageBase64 = null; 
 
+// 🔵 1. የ RENDER ሰርቨር ቤዝ ሊንክ ማስተካከያ (እዚህ ጋ የእራስህን ሊንክ ብቻ ተካ)
+var RENDER_BASE_URL = "https://ozoneai.onrender.com";
+
 window.onload = function() {
 var inputElement = document.getElementById("user-input");
 if (inputElement) {
@@ -770,15 +773,18 @@ setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 30);
 return;
 } 
 
-var apiEndpoint = "https://ozoneai.onrender.com/chat"; 
+// 🟢 2. ተለዋዋጭ የኤንድፖይንት መምረጫ (ባክኤንድህ በትክክል እንዲያነበው)
+var apiEndpoint = RENDER_BASE_URL + "/api/chat"; 
+if (currentMode === 'photo') apiEndpoint = RENDER_BASE_URL + "/api/photo";
+if (currentMode === 'video') apiEndpoint = RENDER_BASE_URL + "/api/video";
+if (currentMode === 'unrestricted') apiEndpoint = RENDER_BASE_URL + "/api/ultimate";
 
 var fetchHeaders = { 
     'Content-Type': 'application/json' 
 };
 
 var fetchBody = {
-    message: message,
-    mode: currentMode
+    message: message
 };
 
 fetch(apiEndpoint, {
@@ -796,18 +802,16 @@ fetch(apiEndpoint, {
 
     if (data && data.reply) {
         finalReply = data.reply;
-        // 🛠️ ማስተካከያ 1፦ ሰርቨሩ በ data.image ወይም በ data.url ቢመልስም ሁለቱንም እንዲቀበል ተደርጓል
         if (data.image) apiImageUrl = data.image;
         else if (data.url) apiImageUrl = data.url;
     } else if (data && data.url) {
-        // 🛠️ ማስተካከያ 2፦ ሰርቨሩ ቀጥታ Image ዩአርኤል ብቻ ከመለሰ
         apiImageUrl = data.url;
         finalReply = "✨ Image generated successfully!";
     } else {
         finalReply = "⚠️ Empty response received from backend server.";
     }
 
-    // 🛠️ ማስተካከያ 3፦ የአማርኛውን ማሳወቂያ ወደ እንግሊዝኛ መቀየር
+    // 🟢 3. ማስታወቂያው ሙሉ በሙሉ ወደ እንግሊዝኛ ተቀይሯል!
     var imgHtml = apiImageUrl ? '<div class="mt-3"><div class="text-xs text-gray-400 mb-1">✨ Generated image based on your request:</div><img src="' + apiImageUrl + '" class="rounded-xl max-w-full sm:max-w-sm h-auto border border-gray-800 shadow-xl block" alt="Ozone AI Gen" onerror="this.onerror=null; this.src=\'https://via.placeholder.com/512?text=Image+Display+Failed\';" /></div>' : '';
 
     var messageBodyHtml = finalReply.includes("Ozyan Ekubay") ?
