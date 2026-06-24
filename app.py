@@ -6,10 +6,39 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# 🔑 ⚠️ ከላይ የነገርኩህን የመቅጃ ምልክት ነክተህ ያገኘኸውን ሙሉ ረጅም ቁልፍ እዚህ ጥቅስ ውስጥ ክተተው፡
-GEMINI_API_KEY = "AQ.Ab8RN6JeGE2Hb-MMoJ6TM9Vdf1CHdbqeic_H5lMaGSzvmROBhA" 
+# 🔑 ያወጣኸው የ Google Gemini API Key
+GEMINI_API_KEY = "AQ.Ab8RN6JeGE2Hb-MMoJ6TM9Vdf1CHdbqeic_H5lMaGSzvmROBhA"
+
+# 🔑 ምትኬ (Backup) OpenRouter Key - ጀሚኒ ቢጨናነቅ ጣቢያው በዚህ ይተካል
+OPENROUTER_API_KEY = "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"
+
+def call_openrouter_backup(system_prompt, user_message):
+    """ጀሚኒ 503 error ሲሰጥ ጣቢያው እንዳይቆም በጀርባ የሚሰራ የኦፕንሮውተር ምትኬ ተግባር"""
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY.strip()}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://ozone-collab.github.io",
+        "X-Title": "OzoneAI"
+    }
+    payload = {
+        "model": "meta-llama/llama-3.1-8b-instruct",
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message}
+        ],
+        "temperature": 0.6
+    }
+    try:
+        res = requests.post(url, headers=headers, json=payload, timeout=12)
+        if res.status_code == 200:
+            return res.json()['choices'][0]['message']['content']
+    except Exception:
+        pass
+    return "⚠️ Both Gemini and Backup servers are busy. Please try again in a few seconds."
 
 def call_gemini_ai(system_instruction, user_message, lower_safety=False):
+    """የጉግል ጀሚኒን የሚጠራ እና ሰርቨሩ ከተጨናነቀ በራስ-ሰር ወደ ምትኬ የሚቀይር ተግባር"""
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY.strip()}"
     headers = {"Content-Type": "application/json"}
     
@@ -35,14 +64,17 @@ def call_gemini_ai(system_instruction, user_message, lower_safety=False):
         ]
         
     try:
-        response = requests.post(url, headers=headers, json=payload, timeout=20)
+        response = requests.post(url, headers=headers, json=payload, timeout=15)
         if response.status_code == 200:
             res_data = response.json()
             return res_data['candidates'][0]['content']['parts'][0]['text']
+        elif response.status_code == 503:
+            # 🔄 ጀሚኒ ከተጨናነቀ ወዲያውኑ ወደ ምትኬው ሰርቨር ይቀይራል!
+            return call_openrouter_backup(system_instruction, user_message)
         else:
-            return f"⚠️ Gemini API Error ({response.status_code}): {response.text}"
-    except Exception as e:
-        return f"⚠️ Connection Error: {str(e)}"
+            return call_openrouter_backup(system_instruction, user_message)
+    except Exception:
+        return call_openrouter_backup(system_instruction, user_message)
 
 # 1. 💬 Chat AI Endpoint
 @app.route('/api/chat', methods=['POST'])
@@ -53,7 +85,7 @@ def chat_ai():
     
     user_message = data['message']
     system_prompt = (
-        "You are OzoneAI, a smart assistant powered by Gemini. Respond in the exact language the user writes. "
+        "You are OzoneAI, a smart assistant. Respond in the exact language the user writes. "
         "Use clean formatting, numbered lists (1, 2, 3), and double line breaks. Do not bunch text together."
     )
     reply = call_gemini_ai(system_prompt, user_message)
